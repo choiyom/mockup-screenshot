@@ -4,7 +4,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import {
   Upload, Download, Monitor, Smartphone, Square, Sun, Layers, Move,
-  X, Loader2, ImagePlus, PackageCheck, Trash2, Type, AlignCenter,
+  X, Loader2, ImagePlus, PackageCheck, Trash2, Type, AlignCenter, Minimize2,
 } from 'lucide-react'
 
 /* ═══════════════════════════════════════════════════════════════
@@ -284,6 +284,7 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
+  const [selectedId, setSelectedId] = useState(null)    // enlarged preview
 
   const [frameColor, setFrameColor] = useState(FRAME_COLORS[0])
 
@@ -418,7 +419,30 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="min-h-full">
+            <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="min-h-full flex flex-col gap-5">
+              {/* ── Enlarged Preview ──────────────────────────── */}
+              {selectedId && images.find(i => i.id === selectedId) && (() => {
+                const sel = images.find(i => i.id === selectedId)
+                return (
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-3 sticky top-0 z-10 shadow-sm">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[12px] font-semibold text-gray-600">{sel.name}</span>
+                      <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                        <Minimize2 className="w-3 h-3" />접기
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-center" style={{ ...previewBgHint, borderRadius: 12, overflow: 'hidden' }}>
+                      {tab === 'simple' ? (
+                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.9} />
+                      ) : (
+                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.1} />
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* ── Thumbnail Grid ───────────────────────────── */}
               <div className="grid gap-5" style={{
                 gridTemplateColumns: `repeat(auto-fill, minmax(${
                   tab === 'appstore' ? '340px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
@@ -435,8 +459,12 @@ export default function App() {
                       )}
                     </div>
 
-                    {/* Visible thumb */}
-                    <div className="rounded-xl overflow-hidden w-full flex items-center justify-center p-2" style={{ ...previewBgHint, minHeight: 140 }}>
+                    {/* Visible thumb — click to enlarge */}
+                    <div
+                      onClick={() => setSelectedId(selectedId === img.id ? null : img.id)}
+                      className={`rounded-xl overflow-hidden w-full flex items-center justify-center p-2 cursor-pointer transition-all ${selectedId === img.id ? 'ring-2 ring-violet-500 ring-offset-2' : 'hover:ring-1 hover:ring-gray-300'}`}
+                      style={{ ...previewBgHint, minHeight: 140 }}
+                    >
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
