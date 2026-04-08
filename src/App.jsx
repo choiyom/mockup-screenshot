@@ -383,7 +383,7 @@ export default function App() {
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
             <Layers className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-[15px] font-bold text-gray-900">DeepXRLab</h1>
+          <h1 className="text-[15px] font-bold text-gray-900">Screenshot &amp; Mockup</h1>
           {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{images.length}장</span>}
         </div>
         <div className="flex items-center gap-2">
