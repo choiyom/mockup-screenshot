@@ -190,7 +190,7 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22 }) {
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0 }) {
   const canvasW = 360 * scale
   const canvasH = canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
@@ -246,13 +246,14 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         </p>
       </div>
 
-      {/* Device area — bottom 78%, fully visible, no clipping */}
+      {/* Device area */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
+        paddingTop: gap * scale,
       }}>
         <DeviceFrame src={src} device={device} shadow={shadow.value} scale={deviceScale} frameColor={frameColor} />
       </div>
@@ -294,6 +295,7 @@ export default function App() {
   const [asTitleSize, setAsTitleSize] = useState(18)   // px at scale=1
   const [asSubSize, setAsSubSize] = useState(11)
   const [asTextTop, setAsTextTop] = useState(22)       // text area % from top
+  const [asGap, setAsGap] = useState(0)                // gap between text and device (px)
 
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
@@ -370,7 +372,7 @@ export default function App() {
   }, [images, bg, tab])
 
   const previewBgHint = bg.isTransparent && tab === 'simple' ? { backgroundImage: checkerCSS, backgroundSize: '16px 16px' } : {}
-  const thumbScale = tab === 'appstore' ? 0.5 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
+  const thumbScale = tab === 'appstore' ? 0.85 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -419,7 +421,7 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="min-h-full">
               <div className="grid gap-5" style={{
                 gridTemplateColumns: `repeat(auto-fill, minmax(${
-                  tab === 'appstore' ? '220px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
+                  tab === 'appstore' ? '340px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
                 }, 1fr))`,
               }}>
                 {images.map((img) => (
@@ -429,7 +431,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       )}
                     </div>
 
@@ -438,7 +440,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} scale={thumbScale} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={thumbScale} />
                       )}
                     </div>
 
@@ -573,6 +575,11 @@ export default function App() {
                     <span className="text-[10px] text-gray-400 w-8 shrink-0">높이</span>
                     <input type="range" min={12} max={40} value={asTextTop} onChange={e => setAsTextTop(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTextTop}%</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">간격</span>
+                    <input type="range" min={0} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
                   </div>
                 </Section>
               </>
