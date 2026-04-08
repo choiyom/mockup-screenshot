@@ -378,7 +378,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* ── HEADER ───────────────────────────────────────────── */}
-      <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between shrink-0">
+      <header className="bg-white border-b border-gray-100 px-3 lg:px-6 py-3 flex items-center justify-between shrink-0 gap-2 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
             <Layers className="w-4 h-4 text-white" />
@@ -402,9 +402,9 @@ export default function App() {
         <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* ── MAIN PREVIEW ───────────────────────────────────── */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
           {images.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} onClick={() => fileInputRef.current?.click()}
@@ -433,9 +433,9 @@ export default function App() {
                     </div>
                     <div className="flex items-center justify-center" style={{ ...previewBgHint, borderRadius: 12, overflow: 'hidden' }}>
                       {tab === 'simple' ? (
-                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.9} />
+                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.1} />
+                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.3} />
                       )}
                     </div>
                   </div>
@@ -489,7 +489,7 @@ export default function App() {
         </main>
 
         {/* ── SIDEBAR ────────────────────────────────────────── */}
-        <aside className="w-[276px] bg-white border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col">
+        <aside className="w-full lg:w-[276px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[50vh] lg:max-h-none">
           {/* Segmented Control */}
           <div className="p-4 pb-2">
             <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
