@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { toPng } from 'html-to-image'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
@@ -190,15 +190,12 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor }) {
-  // App Store: 1260×2240 resolution
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22 }) {
   const canvasW = 360 * scale
   const canvasH = canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = isLightColor(bgColor) ? '#555' : 'rgba(255,255,255,0.7)'
-
-  // Device fills ~80% of canvas width — fits fully without clipping
   const deviceScale = scale * (canvasW * 0.78) / device.frameWidth
 
   return (
@@ -215,9 +212,9 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         position: 'relative',
       }}
     >
-      {/* Text area — top 22% */}
+      {/* Text area */}
       <div style={{
-        flex: '0 0 22%',
+        flex: `0 0 ${textTop}%`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -226,7 +223,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         textAlign: 'center',
       }}>
         <h2 style={{
-          fontSize: 18 * scale,
+          fontSize: titleSize * scale,
           fontWeight: 800,
           color: textColor,
           lineHeight: 1.3,
@@ -237,7 +234,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
           {title || '대제목을 입력하세요'}
         </h2>
         <p style={{
-          fontSize: 11 * scale,
+          fontSize: subSize * scale,
           fontWeight: 500,
           color: subColor,
           lineHeight: 1.55,
@@ -294,6 +291,9 @@ export default function App() {
   const [asSubtitle, setAsSubtitle] = useState('')
   const [asBgColor, setAsBgColor] = useState('#f0edf6')
   const [asTextColor, setAsTextColor] = useState('')  // empty = auto
+  const [asTitleSize, setAsTitleSize] = useState(18)   // px at scale=1
+  const [asSubSize, setAsSubSize] = useState(11)
+  const [asTextTop, setAsTextTop] = useState(22)       // text area % from top
 
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
@@ -319,6 +319,24 @@ export default function App() {
   const onFileChange = useCallback((e) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = '' }, [handleFiles])
   const removeImage = useCallback((id) => setImages(prev => prev.filter(img => img.id !== id)), [])
   const clearAll = useCallback(() => setImages([]), [])
+
+  // Clipboard paste support (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const onPaste = (e) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      const files = []
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) files.push(file)
+        }
+      }
+      if (files.length > 0) handleFiles(files)
+    }
+    window.addEventListener('paste', onPaste)
+    return () => window.removeEventListener('paste', onPaste)
+  }, [handleFiles])
 
   /* ── Export single ─────────────────────────────────────────── */
   const exportSingle = useCallback(async (id) => {
@@ -411,7 +429,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       )}
                     </div>
 
@@ -420,7 +438,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} scale={thumbScale} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} scale={thumbScale} />
                       )}
                     </div>
 
@@ -534,10 +552,28 @@ export default function App() {
 
                 <Section title="대제목" icon={Type}>
                   <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder="당신의 잊혀진 시간을 깨우다" className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold" />
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">크기</span>
+                    <input type="range" min={10} max={36} value={asTitleSize} onChange={e => setAsTitleSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTitleSize}px</span>
+                  </div>
                 </Section>
 
                 <Section title="소제목" icon={AlignCenter}>
                   <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={"당신의 영혼에 새겨진\n전생의 기억을 되짚어냅니다."} rows={3} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">크기</span>
+                    <input type="range" min={8} max={24} value={asSubSize} onChange={e => setAsSubSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asSubSize}px</span>
+                  </div>
+                </Section>
+
+                <Section title="텍스트 위치" icon={Move}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">높이</span>
+                    <input type="range" min={12} max={40} value={asTextTop} onChange={e => setAsTextTop(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTextTop}%</span>
+                  </div>
                 </Section>
               </>
             )}
