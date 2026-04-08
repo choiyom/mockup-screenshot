@@ -489,7 +489,7 @@ export default function App() {
         </main>
 
         {/* ── SIDEBAR ────────────────────────────────────────── */}
-        <aside className="w-full lg:w-[276px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[50vh] lg:max-h-none">
+        <aside className="w-full lg:w-[276px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[70vh] lg:max-h-none">
           {/* Segmented Control */}
           <div className="p-4 pb-2">
             <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
