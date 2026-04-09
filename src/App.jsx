@@ -288,15 +288,16 @@ export default function App() {
 
   const [frameColor, setFrameColor] = useState(FRAME_COLORS[0])
 
-  // App Store tab state
+  // App Store tab state — global defaults
   const [asTitle, setAsTitle] = useState('')
   const [asSubtitle, setAsSubtitle] = useState('')
   const [asBgColor, setAsBgColor] = useState('#f0edf6')
-  const [asTextColor, setAsTextColor] = useState('')  // empty = auto
-  const [asTitleSize, setAsTitleSize] = useState(18)   // px at scale=1
+  const [asTextColor, setAsTextColor] = useState('')
+  const [asTitleSize, setAsTitleSize] = useState(18)
   const [asSubSize, setAsSubSize] = useState(11)
-  const [asTextTop, setAsTextTop] = useState(22)       // text area % from top
-  const [asGap, setAsGap] = useState(0)                // gap between text and device (px)
+  const [asTextTop, setAsTextTop] = useState(22)
+  const [asGap, setAsGap] = useState(0)
+  const [textMode, setTextMode] = useState('global')   // 'global' | 'individual'
 
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
@@ -310,6 +311,8 @@ export default function App() {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           src: e.target.result,
           name: file.name.replace(/\.[^.]+$/, ''),
+          title: '',      // per-image text (used when textMode='individual')
+          subtitle: '',
         }])
       }
       reader.readAsDataURL(file)
@@ -320,8 +323,9 @@ export default function App() {
   const onDragOver = useCallback((e) => { e.preventDefault(); setIsDragging(true) }, [])
   const onDragLeave = useCallback(() => setIsDragging(false), [])
   const onFileChange = useCallback((e) => { if (e.target.files?.length) handleFiles(e.target.files); e.target.value = '' }, [handleFiles])
-  const removeImage = useCallback((id) => setImages(prev => prev.filter(img => img.id !== id)), [])
-  const clearAll = useCallback(() => setImages([]), [])
+  const removeImage = useCallback((id) => { setImages(prev => prev.filter(img => img.id !== id)); if (selectedId === id) setSelectedId(null) }, [selectedId])
+  const clearAll = useCallback(() => { setImages([]); setSelectedId(null) }, [])
+  const updateImage = useCallback((id, updates) => setImages(prev => prev.map(img => img.id === id ? { ...img, ...updates } : img)), [])
 
   // Clipboard paste support (Ctrl+V / Cmd+V)
   useEffect(() => {
@@ -372,11 +376,15 @@ export default function App() {
     finally { setExporting(false); setExportProgress(0) }
   }, [images, bg, tab])
 
+  // Resolve text per image
+  const getTitle = (img) => textMode === 'individual' ? (img.title || '') : asTitle
+  const getSubtitle = (img) => textMode === 'individual' ? (img.subtitle || '') : asSubtitle
+
   const previewBgHint = bg.isTransparent && tab === 'simple' ? { backgroundImage: checkerCSS, backgroundSize: '16px 16px' } : {}
   const thumbScale = tab === 'appstore' ? 0.85 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* ── HEADER ───────────────────────────────────────────── */}
       <header className="bg-white border-b border-gray-100 px-3 lg:px-6 py-3 flex items-center justify-between shrink-0 gap-2 flex-wrap">
         <div className="flex items-center gap-3">
@@ -402,9 +410,9 @@ export default function App() {
         <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileChange} />
       </header>
 
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
         {/* ── MAIN PREVIEW ───────────────────────────────────── */}
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main className="flex-1 min-h-0 overflow-auto p-4 lg:p-6">
           {images.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} onClick={() => fileInputRef.current?.click()}
@@ -435,7 +443,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.3} />
+                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.3} />
                       )}
                     </div>
                   </div>
@@ -455,7 +463,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       )}
                     </div>
 
@@ -468,7 +476,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={thumbScale} />
+                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={thumbScale} />
                       )}
                     </div>
 
@@ -580,19 +588,45 @@ export default function App() {
                   </div>
                 </Section>
 
-                <Section title="대제목" icon={Type}>
-                  <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder="당신의 잊혀진 시간을 깨우다" className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold" />
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-8 shrink-0">크기</span>
+                {/* Text mode toggle */}
+                <Section title="텍스트" icon={Type}>
+                  <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 mb-3">
+                    <button onClick={() => setTextMode('global')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'global' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>전체 적용</button>
+                    <button onClick={() => setTextMode('individual')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>개별 적용</button>
+                  </div>
+
+                  {textMode === 'global' ? (
+                    <>
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">대제목</label>
+                      <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder="대제목을 입력하세요" className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">소제목</label>
+                      <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={"소제목을 입력하세요"} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                    </>
+                  ) : selectedId && images.find(i => i.id === selectedId) ? (() => {
+                    const sel = images.find(i => i.id === selectedId)
+                    return (
+                      <>
+                        <p className="text-[10px] text-violet-500 font-bold mb-2">📌 {sel.name} 편집 중</p>
+                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">대제목</label>
+                        <input type="text" value={sel.title} onChange={e => updateImage(sel.id, { title: e.target.value })} placeholder="이 이미지의 대제목" className="w-full text-[13px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">소제목</label>
+                        <textarea value={sel.subtitle} onChange={e => updateImage(sel.id, { subtitle: e.target.value })} placeholder="이 이미지의 소제목" rows={2} className="w-full text-[12px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                      </>
+                    )
+                  })() : (
+                    <p className="text-[11px] text-gray-400 bg-gray-50 rounded-lg p-3 text-center">이미지를 클릭하면 개별 텍스트를 편집할 수 있습니다</p>
+                  )}
+                </Section>
+
+                {/* Text size — always global (layout) */}
+                <Section title="텍스트 크기" icon={Type}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">대제목</span>
                     <input type="range" min={10} max={36} value={asTitleSize} onChange={e => setAsTitleSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTitleSize}px</span>
                   </div>
-                </Section>
-
-                <Section title="소제목" icon={AlignCenter}>
-                  <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={"당신의 영혼에 새겨진\n전생의 기억을 되짚어냅니다."} rows={3} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-8 shrink-0">크기</span>
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">소제목</span>
                     <input type="range" min={8} max={24} value={asSubSize} onChange={e => setAsSubSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asSubSize}px</span>
                   </div>
