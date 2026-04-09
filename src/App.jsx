@@ -499,9 +499,7 @@ export default function App() {
       {/* ── HEADER ───────────────────────────────────────────── */}
       <header className="bg-white border-b border-gray-100 px-3 lg:px-6 py-3 flex items-center justify-between shrink-0 gap-2 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-            <Layers className="w-4 h-4 text-white" />
-          </div>
+          <img src="/favicon.svg" alt="" className="w-8 h-8" />
           <h1 className="text-[15px] font-bold text-gray-900">Screenshot & Mockup</h1>
           <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">FREE</span>
           {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{images.length}장</span>}
