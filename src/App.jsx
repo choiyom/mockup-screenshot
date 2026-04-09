@@ -477,6 +477,11 @@ export default function App() {
   const getTitle = (img) => textMode === 'individual' ? (img.title || '') : asTitle
   const getSubtitle = (img) => textMode === 'individual' ? (img.subtitle || '') : asSubtitle
 
+  // First active format for preview aspect ratio
+  const previewFmt = STORE_PRESETS.flatMap(s => s.formats).find(f => activeFormats.includes(f.id))
+  const previewFmtDevice = previewFmt ? (DEVICES.find(d => d.id === previewFmt.deviceId) || device) : device
+  const previewExportH = previewFmt ? 360 * (previewFmt.h / previewFmt.w) : undefined
+
   const previewBgHint = bg.isTransparent && tab === 'simple' ? { backgroundImage: checkerCSS, backgroundSize: '16px 16px' } : {}
   const thumbScale = tab === 'appstore' ? 0.55 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
 
@@ -540,7 +545,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.8} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={0.9} />
+                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} />
                       )}
                     </div>
                   </div>
@@ -560,10 +565,10 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
-                        /* Render one hidden card per active format with correct device */
+                        /* Render one hidden card per active format — each has correct aspect ratio */
                         STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
                           const fmtDevice = DEVICES.find(d => d.id === fmt.deviceId) || device
-                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} />
+                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} />
                         })
                       )}
                     </div>
@@ -577,7 +582,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={thumbScale} />
+                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} />
                       )}
                     </div>
 
