@@ -445,6 +445,10 @@ export default function App() {
   /* ── Export ALL as ZIP ─────────────────────────────────────── */
   const exportAllZip = useCallback(async () => {
     if (images.length === 0) return
+    // Show ad before download starts
+    setShowAdPopup(true)
+    await new Promise(r => setTimeout(r, 3000)) // 3초 광고 노출
+    setShowAdPopup(false)
     setExporting(true); setExportProgress(0)
     try {
       const zip = new JSZip()
@@ -476,8 +480,6 @@ export default function App() {
         }
       }
       saveAs(await zip.generateAsync({ type: 'blob' }), `mockups_${new Date().getFullYear()}.zip`)
-      // Show ad after download
-      setTimeout(() => setShowAdPopup(true), 1500)
     } catch (err) { console.error('ZIP export failed:', err) }
     finally { setExporting(false); setExportProgress(0) }
   }, [images, bg, tab])
