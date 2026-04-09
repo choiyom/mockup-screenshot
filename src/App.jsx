@@ -491,7 +491,6 @@ export default function App() {
   const [exporting, setExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [selectedId, setSelectedId] = useState(null)    // enlarged preview
-  const [showAdPopup, setShowAdPopup] = useState(false)
 
   const [frameColor, setFrameColor] = useState(FRAME_COLORS[0])
 
@@ -554,11 +553,6 @@ export default function App() {
     return () => window.removeEventListener('paste', onPaste)
   }, [handleFiles])
 
-  // Ad popup timer — every 5 minutes
-  useEffect(() => {
-    const timer = setInterval(() => setShowAdPopup(true), 10 * 60 * 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   /* ── Export single ─────────────────────────────────────────── */
   const exportSingle = useCallback(async (id) => {
@@ -576,10 +570,6 @@ export default function App() {
   /* ── Export ALL as ZIP ─────────────────────────────────────── */
   const exportAllZip = useCallback(async () => {
     if (images.length === 0) return
-    // Show ad before download starts
-    setShowAdPopup(true)
-    await new Promise(r => setTimeout(r, 3000)) // 3초 광고 노출
-    setShowAdPopup(false)
     setExporting(true); setExportProgress(0)
     try {
       const zip = new JSZip()
@@ -944,30 +934,11 @@ export default function App() {
               </div>
             )}
 
-            {/* Sidebar ad — small, non-intrusive */}
-            <div className="mt-auto pt-3 border-t border-gray-100">
-              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 100 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
-              <p className="text-[9px] text-gray-200 text-center mt-1">AD</p>
-            </div>
           </div>
         </aside>
       </div>
 
-      {/* ── Ad Popup — only before ZIP download, minimal & closeable ── */}
-      {showAdPopup && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[60]" onClick={() => setShowAdPopup(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-[85%] overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-              <span className="text-[11px] text-gray-400">{t.sponsored}</span>
-              <button onClick={() => setShowAdPopup(false)} className="text-gray-400 hover:text-gray-600 p-1"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="p-4 flex items-center justify-center" style={{ minHeight: 200 }}>
-              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 200 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
-              <p className="text-[10px] text-gray-300">{t.adArea}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Google AdSense auto ads handle placement automatically */}
 
       {/* ── Export overlay ────────────────────────────────────── */}
       {exporting && (
