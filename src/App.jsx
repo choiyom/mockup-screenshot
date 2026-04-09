@@ -17,6 +17,12 @@ const DEVICES = [
   { id: 'galaxy-s25-ultra', name: 'Galaxy S25 Ultra', icon: Smartphone, screenW: 412, screenH: 892, frameWidth: 258, frameRadius: 36, bezel: 7, type: 'samsung' },
   { id: 'galaxy-s25-plus', name: 'Galaxy S25+', icon: Smartphone, screenW: 412, screenH: 883, frameWidth: 252, frameRadius: 34, bezel: 7, type: 'samsung' },
   { id: 'galaxy-s25', name: 'Galaxy S25', icon: Smartphone, screenW: 360, screenH: 780, frameWidth: 242, frameRadius: 32, bezel: 7, type: 'samsung' },
+  // ── iPad ──────────────────────────────────────────────────
+  { id: 'ipad-pro-13', name: 'iPad Pro 13"', icon: Monitor, screenW: 2048, screenH: 2732, frameWidth: 340, frameRadius: 24, bezel: 12, type: 'ipad' },
+  { id: 'ipad-pro-11', name: 'iPad Pro 11"', icon: Monitor, screenW: 1668, screenH: 2388, frameWidth: 320, frameRadius: 22, bezel: 12, type: 'ipad' },
+  // ── Android Tablet ───────────────────────────────────────
+  { id: 'android-tab-10', name: 'Android Tablet 10"', icon: Monitor, screenW: 1920, screenH: 2560, frameWidth: 330, frameRadius: 20, bezel: 10, type: 'android-tab' },
+  // ── Browser ────────────────────────────────────────────────
   { id: 'browser-landscape', name: 'Browser (가로)', icon: Monitor, screenW: 1440, screenH: 900, frameWidth: 520, frameRadius: 12, bezel: 0, type: 'browser' },
   { id: 'browser-portrait', name: 'Browser (세로)', icon: Monitor, screenW: 768, screenH: 1024, frameWidth: 360, frameRadius: 12, bezel: 0, type: 'browser' },
   { id: 'glass-landscape', name: 'Glass (가로)', icon: Square, screenW: 16, screenH: 10, frameWidth: 460, frameRadius: 24, bezel: 0, type: 'glass' },
@@ -52,6 +58,25 @@ const FRAME_COLORS = [
   { id: 'dark', label: 'Dark', body: 'linear-gradient(170deg, #3a3a3c 0%, #2c2c2e 40%, #1c1c1e 60%, #3a3a3c 100%)', btn: 'linear-gradient(180deg, #4a4a4c, #2c2c2e)', island: '#000' },
   { id: 'gold', label: 'Gold', body: 'linear-gradient(170deg, #e8dcc8 0%, #d4c4a8 40%, #bfaf92 60%, #ddd0bc 100%)', btn: 'linear-gradient(180deg, #d4c4a8, #bfaf92)', island: '#000' },
   { id: 'blue', label: 'Blue', body: 'linear-gradient(170deg, #8eaec4 0%, #6a8fae 40%, #527a98 60%, #8eaec4 100%)', btn: 'linear-gradient(180deg, #8eaec4, #6a8fae)', island: '#000' },
+]
+
+/* ═══════════════════════════════════════════════════════════════
+   STORE FORMAT PRESETS — export resolution + matching device
+   ═══════════════════════════════════════════════════════════════ */
+const STORE_PRESETS = [
+  { id: 'appstore', label: 'App Store', formats: [
+    { id: 'as-iphone-67', label: 'iPhone 6.7"', w: 1290, h: 2796, deviceId: 'iphone16-pro-max' },
+    { id: 'as-iphone-69', label: 'iPhone 6.9"', w: 1320, h: 2868, deviceId: 'iphone16-pro-max' },
+    { id: 'as-iphone-61', label: 'iPhone 6.1"', w: 1179, h: 2556, deviceId: 'iphone16' },
+    { id: 'as-ipad-13', label: 'iPad 13"', w: 2048, h: 2732, deviceId: 'ipad-pro-13' },
+    { id: 'as-ipad-11', label: 'iPad 11"', w: 1668, h: 2388, deviceId: 'ipad-pro-11' },
+  ]},
+  { id: 'playstore', label: 'Play Store', formats: [
+    { id: 'ps-phone', label: 'Phone', w: 1080, h: 1920, deviceId: 'galaxy-s25-ultra' },
+    { id: 'ps-phone-hd', label: 'Phone QHD', w: 1440, h: 2560, deviceId: 'galaxy-s25-ultra' },
+    { id: 'ps-tab-7', label: 'Tablet 7"', w: 1800, h: 2560, deviceId: 'android-tab-10' },
+    { id: 'ps-tab-10', label: 'Tablet 10"', w: 1920, h: 2560, deviceId: 'android-tab-10' },
+  ]},
 ]
 
 /* ═══════════════════════════════════════════════════════════════
@@ -125,6 +150,54 @@ function SamsungFrame({ src, device, shadow, scale = 1, frameColor }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   IPAD FRAME
+   ═══════════════════════════════════════════════════════════════ */
+function IPadFrame({ src, device, shadow, scale = 1, frameColor }) {
+  const w = device.frameWidth * scale
+  const r = device.frameRadius * scale
+  const bezel = device.bezel * scale
+  const fc = frameColor || FRAME_COLORS[0]
+  return (
+    <div style={{
+      width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
+      background: fc.body, position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.1)', pointerEvents: 'none', zIndex: 5 }} />
+      <div style={{
+        width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+        boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.2)`,
+      }}>
+        <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANDROID TABLET FRAME
+   ═══════════════════════════════════════════════════════════════ */
+function AndroidTabFrame({ src, device, shadow, scale = 1, frameColor }) {
+  const w = device.frameWidth * scale
+  const r = device.frameRadius * scale
+  const bezel = device.bezel * scale
+  const fc = frameColor || FRAME_COLORS[1]
+  return (
+    <div style={{
+      width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
+      background: fc.body, position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 0.5px 0 rgba(255,255,255,0.15), inset 0 -0.5px 0 rgba(0,0,0,0.15)', pointerEvents: 'none', zIndex: 5 }} />
+      <div style={{
+        width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+        boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.2)`,
+      }}>
+        <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
    BROWSER FRAME
    ═══════════════════════════════════════════════════════════════ */
 function BrowserFrame({ src, device, shadow, scale = 1 }) {
@@ -169,6 +242,8 @@ function DeviceFrame({ src, device, shadow, scale = 1, frameColor }) {
   switch (device.type) {
     case 'iphone': return <IPhoneFrame {...p} />
     case 'samsung': return <SamsungFrame {...p} />
+    case 'ipad': return <IPadFrame {...p} />
+    case 'android-tab': return <AndroidTabFrame {...p} />
     case 'browser': return <BrowserFrame {...p} />
     case 'glass': return <GlassFrame {...p} />
     default: return null
@@ -190,9 +265,9 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0 }) {
-  const canvasW = 360 * scale
-  const canvasH = canvasW * (2240 / 1260)
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH }) {
+  const canvasW = exportW ? exportW * scale : 360 * scale
+  const canvasH = exportH ? exportH * scale : canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = isLightColor(bgColor) ? '#555' : 'rgba(255,255,255,0.7)'
@@ -298,6 +373,8 @@ export default function App() {
   const [asTextTop, setAsTextTop] = useState(22)
   const [asGap, setAsGap] = useState(0)
   const [textMode, setTextMode] = useState('global')   // 'global' | 'individual'
+  const [activeFormats, setActiveFormats] = useState(['as-iphone-67']) // checked format IDs
+  const [previewFormat, setPreviewFormat] = useState(null) // format to preview in detail
 
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
@@ -364,12 +441,32 @@ export default function App() {
     setExporting(true); setExportProgress(0)
     try {
       const zip = new JSZip()
-      for (let i = 0; i < images.length; i++) {
-        const el = cardRefs.current[images[i].id]
-        if (!el) continue
-        const dataUrl = await toPng(el, { pixelRatio: 2, cacheBust: true, backgroundColor: bg.isTransparent && tab === 'simple' ? null : undefined })
-        zip.file(`mockup-${images[i].name || i + 1}.png`, dataUrl.split(',')[1], { base64: true })
-        setExportProgress(Math.round(((i + 1) / images.length) * 100))
+      if (tab === 'simple') {
+        for (let i = 0; i < images.length; i++) {
+          const el = cardRefs.current[images[i].id]
+          if (!el) continue
+          const dataUrl = await toPng(el, { pixelRatio: 2, cacheBust: true, backgroundColor: bg.isTransparent ? null : undefined })
+          zip.file(`mockup-${images[i].name || i + 1}.png`, dataUrl.split(',')[1], { base64: true })
+          setExportProgress(Math.round(((i + 1) / images.length) * 100))
+        }
+      } else {
+        // App Store tab — export each image × each active format
+        const allFormats = STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id))
+        const total = images.length * allFormats.length
+        let done = 0
+        for (const img of images) {
+          for (const fmt of allFormats) {
+            const el = cardRefs.current[`${img.id}-${fmt.id}`] || cardRefs.current[img.id]
+            if (!el) continue
+            // Scale up from 360px canvas to target resolution
+            const ratio = fmt.w / 360
+            const dataUrl = await toPng(el, { pixelRatio: ratio, cacheBust: true })
+            const folder = `${fmt.label.replace(/["\s]/g, '_')}`
+            zip.file(`${folder}/mockup-${img.name || img.id}.png`, dataUrl.split(',')[1], { base64: true })
+            done++
+            setExportProgress(Math.round((done / total) * 100))
+          }
+        }
       }
       saveAs(await zip.generateAsync({ type: 'blob' }), `mockups_${new Date().getFullYear()}.zip`)
     } catch (err) { console.error('ZIP export failed:', err) }
@@ -381,7 +478,7 @@ export default function App() {
   const getSubtitle = (img) => textMode === 'individual' ? (img.subtitle || '') : asSubtitle
 
   const previewBgHint = bg.isTransparent && tab === 'simple' ? { backgroundImage: checkerCSS, backgroundSize: '16px 16px' } : {}
-  const thumbScale = tab === 'appstore' ? 0.85 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
+  const thumbScale = tab === 'appstore' ? 0.55 : device.screenW > device.screenH ? 0.38 : device.type === 'browser' ? 0.44 : 0.42
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
@@ -432,8 +529,8 @@ export default function App() {
               {selectedId && images.find(i => i.id === selectedId) && (() => {
                 const sel = images.find(i => i.id === selectedId)
                 return (
-                  <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-3 sticky top-0 z-10 shadow-sm">
-                    <div className="flex items-center justify-between w-full">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center gap-2 sticky top-0 z-10 shadow-sm max-h-[60vh] overflow-auto">
+                    <div className="flex items-center justify-between w-full shrink-0">
                       <span className="text-[12px] font-semibold text-gray-600">{sel.name}</span>
                       <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                         <Minimize2 className="w-3 h-3" />접기
@@ -441,9 +538,9 @@ export default function App() {
                     </div>
                     <div className="flex items-center justify-center" style={{ ...previewBgHint, borderRadius: 12, overflow: 'hidden' }}>
                       {tab === 'simple' ? (
-                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} />
+                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.8} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={1.3} />
+                        <AppStoreMockupCard src={sel.src} device={device} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} scale={0.9} />
                       )}
                     </div>
                   </div>
@@ -453,17 +550,21 @@ export default function App() {
               {/* ── Thumbnail Grid ───────────────────────────── */}
               <div className="grid gap-5" style={{
                 gridTemplateColumns: `repeat(auto-fill, minmax(${
-                  tab === 'appstore' ? '340px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
+                  tab === 'appstore' ? '220px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
                 }, 1fr))`,
               }}>
                 {images.map((img) => (
                   <div key={img.id} className="group relative flex flex-col items-center">
-                    {/* Hidden full-res export target */}
+                    {/* Hidden full-res export targets */}
                     <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={device} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
+                        /* Render one hidden card per active format with correct device */
+                        STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
+                          const fmtDevice = DEVICES.find(d => d.id === fmt.deviceId) || device
+                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} />
+                        })
                       )}
                     </div>
 
@@ -516,7 +617,12 @@ export default function App() {
               <div className="flex flex-col gap-3">
                 <DeviceGroup label="iPhone" devices={DEVICES.filter(d => d.type === 'iphone')} current={device} onSelect={setDevice} />
                 <DeviceGroup label="Galaxy" devices={DEVICES.filter(d => d.type === 'samsung')} current={device} onSelect={setDevice} tag="Android" />
+                {tab === 'appstore' && <>
+                  <DeviceGroup label="iPad" devices={DEVICES.filter(d => d.type === 'ipad')} current={device} onSelect={setDevice} />
+                  <DeviceGroup label="Android Tablet" devices={DEVICES.filter(d => d.type === 'android-tab')} current={device} onSelect={setDevice} tag="Android" />
+                </>}
                 {tab === 'simple' && <>
+                  <DeviceGroup label="iPad" devices={DEVICES.filter(d => d.type === 'ipad')} current={device} onSelect={setDevice} />
                   <DeviceGroup label="Browser" devices={DEVICES.filter(d => d.type === 'browser')} current={device} onSelect={setDevice} />
                   <DeviceGroup label="Glass" devices={DEVICES.filter(d => d.type === 'glass')} current={device} onSelect={setDevice} />
                 </>}
@@ -524,7 +630,7 @@ export default function App() {
             </Section>
 
             {/* ── SHARED: Frame Color (phone only) ──────────── */}
-            {(device.type === 'iphone' || device.type === 'samsung') && (
+            {(device.type === 'iphone' || device.type === 'samsung' || device.type === 'ipad' || device.type === 'android-tab') && (
               <Section title="프레임 컬러" icon={Sun}>
                 <div className="flex gap-2">
                   {FRAME_COLORS.map(fc => (
@@ -567,6 +673,28 @@ export default function App() {
             {/* ── TAB 2: App Store ──────────────────────────── */}
             {tab === 'appstore' && (
               <>
+                {/* Store format presets */}
+                <Section title="스토어 사이즈" icon={PackageCheck}>
+                  {STORE_PRESETS.map(store => (
+                    <div key={store.id} className="mb-3">
+                      <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">{store.label}</p>
+                      <div className="flex flex-col gap-1">
+                        {store.formats.map(fmt => (
+                          <label key={fmt.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer text-[11px]">
+                            <input type="checkbox" checked={activeFormats.includes(fmt.id)} onChange={e => {
+                              if (e.target.checked) setActiveFormats(prev => [...prev, fmt.id])
+                              else setActiveFormats(prev => prev.filter(x => x !== fmt.id))
+                            }} className="accent-violet-600 w-3.5 h-3.5" />
+                            <span className="font-semibold text-gray-700 flex-1">{fmt.label}</span>
+                            <span className="text-[9px] text-gray-400 font-mono">{fmt.w}×{fmt.h}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-gray-400 mt-1">체크한 사이즈가 ZIP에 포함됩니다</p>
+                </Section>
+
                 <Section title="배경 색상" icon={Sun}>
                   <div className="flex items-center gap-2">
                     <input type="color" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
