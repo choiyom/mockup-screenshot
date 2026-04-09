@@ -4,8 +4,137 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import {
   Upload, Download, Monitor, Smartphone, Square, Sun, Layers, Move,
-  X, Loader2, ImagePlus, PackageCheck, Trash2, Type, AlignCenter, Minimize2,
+  X, Loader2, ImagePlus, PackageCheck, Trash2, Type, AlignCenter, Minimize2, Globe,
 } from 'lucide-react'
+
+/* ═══════════════════════════════════════════════════════════════
+   i18n
+   ═══════════════════════════════════════════════════════════════ */
+const T = {
+  en: {
+    dropTitle: 'Drop your screenshots here',
+    dropSub: 'Supports multiple images at once',
+    addImages: 'Add Images',
+    exportAll: 'Export All (ZIP)',
+    clearAll: 'Clear all',
+    deviceFrame: 'Device Frame',
+    frameColor: 'Frame Color',
+    background: 'Background',
+    padding: 'Padding',
+    shadow: 'Shadow',
+    storeSize: 'Store Sizes',
+    storeSizeHint: 'Checked sizes will be included in ZIP',
+    bgColor: 'Background Color',
+    textColor: 'Text Color',
+    text: 'Text',
+    globalApply: 'Apply All',
+    individualApply: 'Individual',
+    title: 'Title',
+    titlePlaceholder: 'Enter title',
+    subtitle: 'Subtitle',
+    subtitlePlaceholder: 'Enter subtitle',
+    editingImg: 'Editing',
+    selectToEdit: 'Click an image to edit its text',
+    textSize: 'Text Size',
+    textPos: 'Text Position',
+    height: 'Height',
+    gap: 'Gap',
+    size: 'Size',
+    add: 'Add',
+    collapse: 'Collapse',
+    simpleDevice: 'Simple Device',
+    storeScreenshot: 'Store Screenshot',
+    tipSimple: 'Upload screenshots and pick a device frame.',
+    tipStore: 'Add screenshots and marketing text to create store images.',
+    generating: 'Generating mockups...',
+    complete: 'complete',
+    sponsored: 'Sponsored',
+    adArea: 'Ad area',
+    imgCount: (n) => `${n} image${n > 1 ? 's' : ''}`,
+  },
+  ko: {
+    dropTitle: '스크린샷을 드롭하세요',
+    dropSub: '여러 장 동시 업로드 가능',
+    addImages: '{t.addImages}',
+    exportAll: 'Export All (ZIP)',
+    clearAll: '{t.clearAll}',
+    deviceFrame: '디바이스 프레임',
+    frameColor: '프레임 컬러',
+    background: '배경',
+    padding: '여백',
+    shadow: '그림자',
+    storeSize: '스토어 사이즈',
+    storeSizeHint: '체크한 사이즈가 ZIP에 포함됩니다',
+    bgColor: '배경 색상',
+    textColor: '글씨 색상',
+    text: '텍스트',
+    globalApply: '전체 적용',
+    individualApply: '개별 적용',
+    title: '대제목',
+    titlePlaceholder: '대제목을 입력하세요',
+    subtitle: '소제목',
+    subtitlePlaceholder: '소제목을 입력하세요',
+    editingImg: '편집 중',
+    selectToEdit: '이미지를 클릭하면 개별 텍스트를 편집할 수 있습니다',
+    textSize: '텍스트 크기',
+    textPos: '텍스트 위치',
+    height: '높이',
+    gap: '간격',
+    size: '크기',
+    add: '추가',
+    collapse: '접기',
+    simpleDevice: '심플 디바이스',
+    storeScreenshot: '스토어 스크린샷',
+    tipSimple: '스크린샷을 업로드하고 디바이스 프레임을 선택하세요.',
+    tipStore: '스크린샷과 마케팅 텍스트를 입력해 스토어용 이미지를 만드세요.',
+    generating: '목업 생성 중...',
+    complete: '완료',
+    sponsored: 'Sponsored',
+    adArea: '광고 영역',
+    imgCount: (n) => `${n}장`,
+  },
+  zh: {
+    dropTitle: '拖放截图到这里',
+    dropSub: '支持同时上传多张图片',
+    addImages: '添加图片',
+    exportAll: '导出全部 (ZIP)',
+    clearAll: '全部清除',
+    deviceFrame: '设备框架',
+    frameColor: '框架颜色',
+    background: '背景',
+    padding: '间距',
+    shadow: '阴影',
+    storeSize: '商店尺寸',
+    storeSizeHint: '勾选的尺寸将包含在ZIP中',
+    bgColor: '背景颜色',
+    textColor: '文字颜色',
+    text: '文本',
+    globalApply: '全部应用',
+    individualApply: '单独应用',
+    title: '大标题',
+    titlePlaceholder: '请输入标题',
+    subtitle: '副标题',
+    subtitlePlaceholder: '请输入副标题',
+    editingImg: '编辑中',
+    selectToEdit: '点击图片编辑其文本',
+    textSize: '文字大小',
+    textPos: '文字位置',
+    height: '高度',
+    gap: '间距',
+    size: '大小',
+    add: '添加',
+    collapse: '收起',
+    simpleDevice: '简单设备',
+    storeScreenshot: '商店截图',
+    tipSimple: '上传截图并选择设备框架。',
+    tipStore: '添加截图和营销文案来制作商店图片。',
+    generating: '正在生成...',
+    complete: '完成',
+    sponsored: 'Sponsored',
+    adArea: '广告区域',
+    imgCount: (n) => `${n}张`,
+  },
+}
 
 /* ═══════════════════════════════════════════════════════════════
    DEVICES
@@ -350,6 +479,8 @@ function isLightColor(hex) {
    MAIN APP
    ═══════════════════════════════════════════════════════════════ */
 export default function App() {
+  const [lang, setLang] = useState('en')
+  const t = T[lang]
   const [tab, setTab] = useState('simple') // 'simple' | 'appstore'
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
@@ -425,7 +556,7 @@ export default function App() {
 
   // Ad popup timer — every 5 minutes
   useEffect(() => {
-    const timer = setInterval(() => setShowAdPopup(true), 5 * 60 * 1000)
+    const timer = setInterval(() => setShowAdPopup(true), 10 * 60 * 1000)
     return () => clearInterval(timer)
   }, [])
 
@@ -504,16 +635,22 @@ export default function App() {
           <img src="/favicon.svg" alt="" className="w-8 h-8" />
           <h1 className="text-[15px] font-bold text-gray-900">Screenshot & Mockup</h1>
           <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">FREE</span>
-          {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{images.length}장</span>}
+          {/* Language toggle */}
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 ml-1">
+            {[['en','EN'],['ko','KR'],['zh','中']].map(([code, label]) => (
+              <button key={code} onClick={() => setLang(code)} className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${lang === code ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>{label}</button>
+            ))}
+          </div>
+          {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{t.imgCount(images.length)}</span>}
         </div>
         <div className="flex items-center gap-2">
           {images.length > 0 && (
             <button onClick={clearAll} className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-              <Trash2 className="w-3.5 h-3.5" />전체 삭제
+              <Trash2 className="w-3.5 h-3.5" />{t.clearAll}
             </button>
           )}
           <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-4 py-2 text-[13px] text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors font-semibold">
-            <ImagePlus className="w-4 h-4" />이미지 추가
+            <ImagePlus className="w-4 h-4" />{t.addImages}
           </button>
           <button onClick={exportAllZip} disabled={images.length === 0 || exporting} className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white text-[13px] font-semibold rounded-xl hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {exporting ? <><Loader2 className="w-4 h-4 animate-spin" />{exportProgress}%</> : <><PackageCheck className="w-4 h-4" />Export All (ZIP)</>}
@@ -533,8 +670,8 @@ export default function App() {
                   <Upload className={`w-7 h-7 ${isDragging ? 'text-violet-600' : 'text-gray-300'}`} />
                 </div>
                 <div className="text-center">
-                  <p className={`text-[14px] font-semibold ${isDragging ? 'text-violet-700' : 'text-gray-500'}`}>스크린샷을 드롭하세요</p>
-                  <p className="text-[12px] text-gray-400 mt-1">여러 장 동시 업로드 가능</p>
+                  <p className={`text-[14px] font-semibold ${isDragging ? 'text-violet-700' : 'text-gray-500'}`}>{t.dropTitle}</p>
+                  <p className="text-[12px] text-gray-400 mt-1">{t.dropSub}</p>
                 </div>
               </div>
             </div>
@@ -548,7 +685,7 @@ export default function App() {
                     <div className="flex items-center justify-between w-full shrink-0">
                       <span className="text-[12px] font-semibold text-gray-600">{sel.name}</span>
                       <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                        <Minimize2 className="w-3 h-3" />접기
+                        <Minimize2 className="w-3 h-3" />{t.collapse}
                       </button>
                     </div>
                     <div className="flex items-center justify-center" style={{ ...previewBgHint, borderRadius: 12, overflow: 'hidden' }}>
@@ -597,15 +734,15 @@ export default function App() {
                     </div>
 
                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => exportSingle(img.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white" title="다운로드"><Download className="w-3.5 h-3.5 text-gray-600" /></button>
-                      <button onClick={() => removeImage(img.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-red-50" title="삭제"><X className="w-3.5 h-3.5 text-gray-500" /></button>
+                      <button onClick={() => exportSingle(img.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white" title="Download"><Download className="w-3.5 h-3.5 text-gray-600" /></button>
+                      <button onClick={() => removeImage(img.id)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-red-50" title="Remove"><X className="w-3.5 h-3.5 text-gray-500" /></button>
                     </div>
                     <p className="text-[11px] text-gray-400 mt-2 truncate max-w-full px-2 font-medium">{img.name}</p>
                   </div>
                 ))}
 
                 <div onClick={() => fileInputRef.current?.click()} className="rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[160px] transition-colors hover:bg-gray-50">
-                  <ImagePlus className="w-5 h-5 text-gray-300" /><span className="text-[11px] text-gray-400 font-medium">추가</span>
+                  <ImagePlus className="w-5 h-5 text-gray-300" /><span className="text-[11px] text-gray-400 font-medium">{t.add}</span>
                 </div>
               </div>
             </div>
@@ -618,17 +755,17 @@ export default function App() {
           <div className="p-4 pb-2">
             <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
               <button onClick={() => setTab('simple')} className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${tab === 'simple' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-                심플 디바이스
+                {t.simpleDevice}
               </button>
               <button onClick={() => setTab('appstore')} className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${tab === 'appstore' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-                스토어 스크린샷
+                {t.storeScreenshot}
               </button>
             </div>
           </div>
 
           <div className="p-4 pt-2 flex flex-col gap-5 flex-1">
             {/* ── SHARED: Device Frame ──────────────────────── */}
-            <Section title="디바이스 프레임" icon={Smartphone}>
+            <Section title={t.deviceFrame} icon={Smartphone}>
               <div className="flex flex-col gap-3">
                 <DeviceGroup label="iPhone" devices={DEVICES.filter(d => d.type === 'iphone')} current={device} onSelect={setDevice} />
                 <DeviceGroup label="Galaxy" devices={DEVICES.filter(d => d.type === 'samsung')} current={device} onSelect={setDevice} tag="Android" />
@@ -646,7 +783,7 @@ export default function App() {
 
             {/* ── SHARED: Frame Color (phone only) ──────────── */}
             {(device.type === 'iphone' || device.type === 'samsung' || device.type === 'ipad' || device.type === 'android-tab') && (
-              <Section title="프레임 컬러" icon={Sun}>
+              <Section title={t.frameColor} icon={Sun}>
                 <div className="flex gap-2">
                   {FRAME_COLORS.map(fc => (
                     <button key={fc.id} onClick={() => setFrameColor(fc)}
@@ -661,7 +798,7 @@ export default function App() {
             {/* ── TAB 1: Simple ─────────────────────────────── */}
             {tab === 'simple' && (
               <>
-                <Section title="배경" icon={Sun}>
+                <Section title={t.background} icon={Sun}>
                   <div className="grid grid-cols-4 gap-2">
                     {BACKGROUNDS.map(b => {
                       const isGrad = b.value.includes('gradient')
@@ -676,7 +813,7 @@ export default function App() {
                   </div>
                 </Section>
 
-                <Section title="여백" icon={Move}>
+                <Section title={t.padding} icon={Move}>
                   <div className="flex items-center gap-3">
                     <input type="range" min={20} max={140} value={padding} onChange={e => setPadding(Number(e.target.value))} className="flex-1 accent-gray-900 h-1.5" />
                     <span className="text-[11px] text-gray-500 font-mono w-10 text-right">{padding}px</span>
@@ -689,7 +826,7 @@ export default function App() {
             {tab === 'appstore' && (
               <>
                 {/* Store format presets */}
-                <Section title="스토어 사이즈" icon={PackageCheck}>
+                <Section title={t.storeSize} icon={PackageCheck}>
                   {STORE_PRESETS.map(store => (
                     <div key={store.id} className="mb-3">
                       <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">{store.label}</p>
@@ -707,10 +844,10 @@ export default function App() {
                       </div>
                     </div>
                   ))}
-                  <p className="text-[10px] text-gray-400 mt-1">체크한 사이즈가 ZIP에 포함됩니다</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{t.storeSizeHint}</p>
                 </Section>
 
-                <Section title="배경 색상" icon={Sun}>
+                <Section title={t.bgColor} icon={Sun}>
                   <div className="flex items-center gap-2">
                     <input type="color" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
                     <input type="text" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
@@ -723,7 +860,7 @@ export default function App() {
                   </div>
                 </Section>
 
-                <Section title="글씨 색상" icon={Type}>
+                <Section title={t.textColor} icon={Type}>
                   <div className="flex items-center gap-2">
                     <input type="color" value={asTextColor || (isLightColor(asBgColor) ? '#111111' : '#ffffff')} onChange={e => setAsTextColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
                     <input type="text" value={asTextColor || 'Auto'} onChange={e => setAsTextColor(e.target.value)} placeholder="Auto" className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
@@ -732,57 +869,57 @@ export default function App() {
                 </Section>
 
                 {/* Text mode toggle */}
-                <Section title="텍스트" icon={Type}>
+                <Section title={t.text} icon={Type}>
                   <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 mb-3">
-                    <button onClick={() => setTextMode('global')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'global' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>전체 적용</button>
-                    <button onClick={() => setTextMode('individual')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>개별 적용</button>
+                    <button onClick={() => setTextMode('global')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'global' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>{t.globalApply}</button>
+                    <button onClick={() => setTextMode('individual')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${textMode === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>{t.individualApply}</button>
                   </div>
 
                   {textMode === 'global' ? (
                     <>
-                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">대제목</label>
-                      <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder="대제목을 입력하세요" className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
-                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">소제목</label>
-                      <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={"소제목을 입력하세요"} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.title}</label>
+                      <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.subtitle}</label>
+                      <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={t.subtitlePlaceholder} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
                     </>
                   ) : selectedId && images.find(i => i.id === selectedId) ? (() => {
                     const sel = images.find(i => i.id === selectedId)
                     return (
                       <>
-                        <p className="text-[10px] text-violet-500 font-bold mb-2">📌 {sel.name} 편집 중</p>
-                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">대제목</label>
-                        <input type="text" value={sel.title} onChange={e => updateImage(sel.id, { title: e.target.value })} placeholder="이 이미지의 대제목" className="w-full text-[13px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
-                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">소제목</label>
-                        <textarea value={sel.subtitle} onChange={e => updateImage(sel.id, { subtitle: e.target.value })} placeholder="이 이미지의 소제목" rows={2} className="w-full text-[12px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                        <p className="text-[10px] text-violet-500 font-bold mb-2">📌 {sel.name} — {t.editingImg}</p>
+                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.title}</label>
+                        <input type="text" value={sel.title} onChange={e => updateImage(sel.id, { title: e.target.value })} placeholder={t.titlePlaceholder} className="w-full text-[13px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                        <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.subtitle}</label>
+                        <textarea value={sel.subtitle} onChange={e => updateImage(sel.id, { subtitle: e.target.value })} placeholder={t.subtitlePlaceholder} rows={2} className="w-full text-[12px] bg-gray-50 border border-violet-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
                       </>
                     )
                   })() : (
-                    <p className="text-[11px] text-gray-400 bg-gray-50 rounded-lg p-3 text-center">이미지를 클릭하면 개별 텍스트를 편집할 수 있습니다</p>
+                    <p className="text-[11px] text-gray-400 bg-gray-50 rounded-lg p-3 text-center">{t.selectToEdit}</p>
                   )}
                 </Section>
 
                 {/* Text size — always global (layout) */}
-                <Section title="텍스트 크기" icon={Type}>
+                <Section title={t.textSize} icon={Type}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">대제목</span>
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.title}</span>
                     <input type="range" min={10} max={36} value={asTitleSize} onChange={e => setAsTitleSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTitleSize}px</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">소제목</span>
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.subtitle}</span>
                     <input type="range" min={8} max={24} value={asSubSize} onChange={e => setAsSubSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asSubSize}px</span>
                   </div>
                 </Section>
 
-                <Section title="텍스트 위치" icon={Move}>
+                <Section title={t.textPos} icon={Move}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 w-8 shrink-0">높이</span>
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.height}</span>
                     <input type="range" min={12} max={40} value={asTextTop} onChange={e => setAsTextTop(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asTextTop}%</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-8 shrink-0">간격</span>
+                    <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.gap}</span>
                     <input type="range" min={0} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
                   </div>
@@ -791,7 +928,7 @@ export default function App() {
             )}
 
             {/* ── SHARED: Shadow ────────────────────────────── */}
-            <Section title="그림자" icon={Layers}>
+            <Section title={t.shadow} icon={Layers}>
               <div className="grid grid-cols-2 gap-1.5">
                 {SHADOWS.map(s => (
                   <button key={s.id} onClick={() => setShadow(s)} className={`px-3 py-2 rounded-xl text-[12px] font-semibold transition-all ${shadow.id === s.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>{s.label}</button>
@@ -802,36 +939,31 @@ export default function App() {
             {images.length === 0 && (
               <div className="mt-auto p-4 bg-gray-50 rounded-xl">
                 <p className="text-[11px] text-gray-400"><span className="font-semibold text-gray-600">Tip: </span>
-                  {tab === 'simple' ? '스크린샷을 업로드하고 디바이스 프레임을 선택하세요.' : '스크린샷과 마케팅 텍스트를 입력해 스토어용 이미지를 만드세요.'}
+                  {tab === 'simple' ? t.tipSimple : t.tipStore}
                 </p>
               </div>
             )}
+
+            {/* Sidebar ad — small, non-intrusive */}
+            <div className="mt-auto pt-3 border-t border-gray-100">
+              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 100 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+              <p className="text-[9px] text-gray-200 text-center mt-1">AD</p>
+            </div>
           </div>
         </aside>
       </div>
 
-      {/* ── Bottom Ad Banner (fixed) ────────────────────────── */}
-      <div className="shrink-0 bg-white border-t border-gray-100 flex items-center justify-center" style={{ minHeight: 60 }}>
-        {/* AdSense slot — replace data-ad-slot after approval */}
-        <ins className="adsbygoogle" style={{ display: 'inline-block', width: 728, height: 90 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX"></ins>
-        {/* Placeholder until AdSense approved */}
-        <div className="text-[10px] text-gray-300 flex items-center gap-1">
-          <span>AD</span>
-        </div>
-      </div>
-
-      {/* ── Ad Popup (interstitial) ──────────────────────────── */}
+      {/* ── Ad Popup — only before ZIP download, minimal & closeable ── */}
       {showAdPopup && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60]" onClick={() => setShowAdPopup(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-[90%] overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <span className="text-[11px] text-gray-400">Sponsored</span>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[60]" onClick={() => setShowAdPopup(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-[85%] overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+              <span className="text-[11px] text-gray-400">{t.sponsored}</span>
               <button onClick={() => setShowAdPopup(false)} className="text-gray-400 hover:text-gray-600 p-1"><X className="w-4 h-4" /></button>
             </div>
-            <div className="p-6 flex items-center justify-center" style={{ minHeight: 250 }}>
-              {/* AdSense slot for interstitial — replace after approval */}
-              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 250 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
-              <p className="text-[11px] text-gray-300 text-center">광고 영역</p>
+            <div className="p-4 flex items-center justify-center" style={{ minHeight: 200 }}>
+              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 200 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+              <p className="text-[10px] text-gray-300">{t.adArea}</p>
             </div>
           </div>
         </div>
@@ -842,11 +974,11 @@ export default function App() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4 min-w-[280px]">
             <Loader2 className="w-8 h-8 text-violet-600 animate-spin" />
-            <p className="text-[14px] font-semibold text-gray-800">목업 생성 중...</p>
+            <p className="text-[14px] font-semibold text-gray-800">{t.generating}</p>
             <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
               <div className="bg-violet-600 h-full rounded-full transition-all duration-300" style={{ width: `${exportProgress}%` }} />
             </div>
-            <p className="text-[12px] text-gray-400">{exportProgress}% 완료</p>
+            <p className="text-[12px] text-gray-400">{exportProgress}% {t.complete}</p>
           </div>
         </div>
       )}
