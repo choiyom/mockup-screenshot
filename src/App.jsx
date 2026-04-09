@@ -360,6 +360,7 @@ export default function App() {
   const [exporting, setExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [selectedId, setSelectedId] = useState(null)    // enlarged preview
+  const [showAdPopup, setShowAdPopup] = useState(false)
 
   const [frameColor, setFrameColor] = useState(FRAME_COLORS[0])
 
@@ -422,6 +423,12 @@ export default function App() {
     return () => window.removeEventListener('paste', onPaste)
   }, [handleFiles])
 
+  // Ad popup timer — every 5 minutes
+  useEffect(() => {
+    const timer = setInterval(() => setShowAdPopup(true), 5 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [])
+
   /* ── Export single ─────────────────────────────────────────── */
   const exportSingle = useCallback(async (id) => {
     const el = cardRefs.current[id]
@@ -469,6 +476,8 @@ export default function App() {
         }
       }
       saveAs(await zip.generateAsync({ type: 'blob' }), `mockups_${new Date().getFullYear()}.zip`)
+      // Show ad after download
+      setTimeout(() => setShowAdPopup(true), 1500)
     } catch (err) { console.error('ZIP export failed:', err) }
     finally { setExporting(false); setExportProgress(0) }
   }, [images, bg, tab])
@@ -493,7 +502,8 @@ export default function App() {
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
             <Layers className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-[15px] font-bold text-gray-900">Screenshot &amp; Mockup</h1>
+          <h1 className="text-[15px] font-bold text-gray-900">Screenshot & Mockup</h1>
+          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">FREE</span>
           {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{images.length}장</span>}
         </div>
         <div className="flex items-center gap-2">
@@ -799,6 +809,33 @@ export default function App() {
           </div>
         </aside>
       </div>
+
+      {/* ── Bottom Ad Banner (fixed) ────────────────────────── */}
+      <div className="shrink-0 bg-white border-t border-gray-100 flex items-center justify-center" style={{ minHeight: 60 }}>
+        {/* AdSense slot — replace data-ad-slot after approval */}
+        <ins className="adsbygoogle" style={{ display: 'inline-block', width: 728, height: 90 }} data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+        {/* Placeholder until AdSense approved */}
+        <div className="text-[10px] text-gray-300 flex items-center gap-1">
+          <span>AD</span>
+        </div>
+      </div>
+
+      {/* ── Ad Popup (interstitial) ──────────────────────────── */}
+      {showAdPopup && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60]" onClick={() => setShowAdPopup(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-[90%] overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <span className="text-[11px] text-gray-400">Sponsored</span>
+              <button onClick={() => setShowAdPopup(false)} className="text-gray-400 hover:text-gray-600 p-1"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-6 flex items-center justify-center" style={{ minHeight: 250 }}>
+              {/* AdSense slot for interstitial — replace after approval */}
+              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 250 }} data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+              <p className="text-[11px] text-gray-300 text-center">광고 영역</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Export overlay ────────────────────────────────────── */}
       {exporting && (
