@@ -619,7 +619,7 @@ export default function App() {
                 심플 디바이스
               </button>
               <button onClick={() => setTab('appstore')} className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${tab === 'appstore' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-                앱스토어 양식
+                스토어 스크린샷
               </button>
             </div>
           </div>
@@ -800,7 +800,7 @@ export default function App() {
             {images.length === 0 && (
               <div className="mt-auto p-4 bg-gray-50 rounded-xl">
                 <p className="text-[11px] text-gray-400"><span className="font-semibold text-gray-600">Tip: </span>
-                  {tab === 'simple' ? '스크린샷을 업로드하고 디바이스 프레임을 선택하세요.' : '스크린샷과 마케팅 텍스트를 입력해 앱스토어용 이미지를 만드세요.'}
+                  {tab === 'simple' ? '스크린샷을 업로드하고 디바이스 프레임을 선택하세요.' : '스크린샷과 마케팅 텍스트를 입력해 스토어용 이미지를 만드세요.'}
                 </p>
               </div>
             )}
@@ -811,7 +811,7 @@ export default function App() {
       {/* ── Bottom Ad Banner (fixed) ────────────────────────── */}
       <div className="shrink-0 bg-white border-t border-gray-100 flex items-center justify-center" style={{ minHeight: 60 }}>
         {/* AdSense slot — replace data-ad-slot after approval */}
-        <ins className="adsbygoogle" style={{ display: 'inline-block', width: 728, height: 90 }} data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+        <ins className="adsbygoogle" style={{ display: 'inline-block', width: 728, height: 90 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX"></ins>
         {/* Placeholder until AdSense approved */}
         <div className="text-[10px] text-gray-300 flex items-center gap-1">
           <span>AD</span>
@@ -828,7 +828,7 @@ export default function App() {
             </div>
             <div className="p-6 flex items-center justify-center" style={{ minHeight: 250 }}>
               {/* AdSense slot for interstitial — replace after approval */}
-              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 250 }} data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
+              <ins className="adsbygoogle" style={{ display: 'block', width: '100%', height: 250 }} data-ad-client="ca-pub-5176432406692131" data-ad-slot="XXXXXXXXXX" data-ad-format="auto"></ins>
               <p className="text-[11px] text-gray-300 text-center">광고 영역</p>
             </div>
           </div>
