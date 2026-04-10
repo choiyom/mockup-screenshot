@@ -1039,7 +1039,7 @@ export default function App() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.gap}</span>
-                    <input type="range" min={-80} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <input type="range" min={-150} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
                   </div>
                 </Section>
