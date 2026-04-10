@@ -924,7 +924,7 @@ export default function App() {
             /* Graphic tab — show large canvas preview */
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
-              <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', pointerEvents: 'none', zIndex: -1 }}>
                 <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} offsetX1={grOffsetX1} offsetX2={grOffsetX2} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} />
               </div>
               {/* Visible preview */}
@@ -978,7 +978,7 @@ export default function App() {
                 {images.map((img) => (
                   <div key={img.id} className="group relative flex flex-col items-center">
                     {/* Hidden full-res export targets */}
-                    <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, visibility: 'hidden', pointerEvents: 'none', zIndex: -1 }}>
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
