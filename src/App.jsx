@@ -478,7 +478,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
    STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
    Two layouts: dual-phone or single-tilted
    ═══════════════════════════════════════════════════════════════ */
-function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, graphicShadow = true, showText = true, tilt1 = 25, tilt2 = -15, offsetY1 = 0, offsetY2 = 0, subTextColor }) {
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, graphicShadow = true, showText = true, tilt1 = 25, tilt2 = -15, offsetY1 = 0, offsetY2 = 0, offsetX1 = 0, offsetX2 = 0, textOffsetX = 0, textOffsetY = 0, subTextColor }) {
   // landscape: 4096×2000, portrait: 2000×4096
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
@@ -508,6 +508,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
           alignItems: isLand ? 'flex-start' : 'center',
           padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
           textAlign: isLand ? 'left' : 'center',
+          transform: `translate(${textOffsetX * scale}px, ${textOffsetY * scale}px)`,
         }}>
           <h2 style={{
             fontSize: titleSize * scale, fontWeight: 800, color: textColor,
@@ -548,7 +549,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
               {/* Phone 1 */}
               <div style={{
                 position: 'absolute',
-                left: `calc(5% - ${phonesGap * scale}px)`,
+                left: `calc(5% + ${(offsetX1 - phonesGap) * scale}px)`,
                 bottom: `${(-4 + offsetY1) * scale}px`,
                 zIndex: z1,
                 transform: `rotateY(${tilt1}deg)`,
@@ -561,7 +562,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
               {/* Phone 2 */}
               <div style={{
                 position: 'absolute',
-                right: `calc(-2% - ${phonesGap * scale}px)`,
+                right: `calc(-2% + ${(-offsetX2 - phonesGap) * scale}px)`,
                 bottom: `${(-4 + offsetY2) * scale}px`,
                 zIndex: z2,
                 transform: `rotateY(${tilt2}deg)`,
@@ -580,13 +581,12 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
             ? `drop-shadow(${(tilt1 > 0 ? 10 : -10) * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
             : 'none'
           return (
-            <div style={{ perspective: `${500 * scale}px`, perspectiveOrigin: '50% 80%' }}>
+            <div style={{ perspective: `${500 * scale}px`, perspectiveOrigin: '50% 80%', transform: `translate(${offsetX1 * scale}px, ${-offsetY1 * scale}px)` }}>
               <div style={{
                 transform: `rotateY(${tilt1}deg)`,
                 transformStyle: 'preserve-3d',
                 transformOrigin: 'center bottom',
                 filter: singleShadow,
-                marginBottom: offsetY1 * scale,
               }}>
                 <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
               </div>
@@ -628,6 +628,10 @@ export default function App() {
   const [grTilt2, setGrTilt2] = useState(-15)  // phone 2 rotateY
   const [grOffsetY1, setGrOffsetY1] = useState(0)  // phone 1 vertical offset
   const [grOffsetY2, setGrOffsetY2] = useState(0)  // phone 2 vertical offset
+  const [grOffsetX1, setGrOffsetX1] = useState(0)  // phone 1 horizontal offset
+  const [grOffsetX2, setGrOffsetX2] = useState(0)  // phone 2 horizontal offset
+  const [grTextOffsetX, setGrTextOffsetX] = useState(0)  // text horizontal offset
+  const [grTextOffsetY, setGrTextOffsetY] = useState(0)  // text vertical offset
   const [asSubColor, setAsSubColor] = useState('')  // subtitle custom color
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
@@ -700,6 +704,10 @@ export default function App() {
       if (s.grTilt2 != null) setGrTilt2(s.grTilt2)
       if (s.grOffsetY1 != null) setGrOffsetY1(s.grOffsetY1)
       if (s.grOffsetY2 != null) setGrOffsetY2(s.grOffsetY2)
+      if (s.grOffsetX1 != null) setGrOffsetX1(s.grOffsetX1)
+      if (s.grOffsetX2 != null) setGrOffsetX2(s.grOffsetX2)
+      if (s.grTextOffsetX != null) setGrTextOffsetX(s.grTextOffsetX)
+      if (s.grTextOffsetY != null) setGrTextOffsetY(s.grTextOffsetY)
       if (draft.images?.length) setImages(draft.images)
     } catch (e) { console.warn('Draft restore failed:', e) }
   }, [])
@@ -720,6 +728,7 @@ export default function App() {
             graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
             graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
             grTilt1, grTilt2, grOffsetY1, grOffsetY2,
+            grOffsetX1, grOffsetX2, grTextOffsetX, grTextOffsetY,
           },
           images: images.slice(0, 20), // limit to 20 images to avoid localStorage overflow
         }
@@ -734,7 +743,8 @@ export default function App() {
       asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
       graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
       graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
-      grTilt1, grTilt2, grOffsetY1, grOffsetY2, images])
+      grTilt1, grTilt2, grOffsetY1, grOffsetY2,
+      grOffsetX1, grOffsetX2, grTextOffsetX, grTextOffsetY, images])
 
   /* ── File handling ─────────────────────────────────────────── */
   const handleFiles = useCallback((files) => {
@@ -915,10 +925,10 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
               <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
-                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} subTextColor={asSubColor} />
+                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} offsetX1={grOffsetX1} offsetX2={grOffsetX2} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} subTextColor={asSubColor} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} offsetX1={grOffsetX1} offsetX2={grOffsetX2} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
@@ -1261,6 +1271,19 @@ export default function App() {
                   </div>
                 </Section>
 
+                <Section title="텍스트 위치" icon={Move}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
+                    <input type="range" min={-80} max={80} value={grTextOffsetX} onChange={e => setGrTextOffsetX(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTextOffsetX}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
+                    <input type="range" min={-80} max={80} value={grTextOffsetY} onChange={e => setGrTextOffsetY(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTextOffsetY}</span>
+                  </div>
+                </Section>
+
                 <Section title="기기 1 (왼쪽)" icon={Smartphone}>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
@@ -1268,9 +1291,14 @@ export default function App() {
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt1}°</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
+                    <input type="range" min={-100} max={100} value={grOffsetX1} onChange={e => setGrOffsetX1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetX1}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
                     <input type="range" min={-60} max={60} value={grOffsetY1} onChange={e => setGrOffsetY1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY1}px</span>
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY1}</span>
                   </div>
                 </Section>
 
@@ -1281,9 +1309,14 @@ export default function App() {
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt2}°</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
+                    <input type="range" min={-100} max={100} value={grOffsetX2} onChange={e => setGrOffsetX2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetX2}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
                     <input type="range" min={-60} max={60} value={grOffsetY2} onChange={e => setGrOffsetY2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY2}px</span>
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY2}</span>
                   </div>
                 </Section>
 
