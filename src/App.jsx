@@ -536,11 +536,10 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
-   Two layouts: dual-phone or single-tilted
+   STORE GRAPHIC CARD  (Tab 3) — landscape/portrait canvas
+   Flat overlapping layout with up to 4 devices
    ═══════════════════════════════════════════════════════════════ */
-function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, graphicShadow = true, showText = true, tilt1 = 25, tilt2 = -15, offsetY1 = 0, offsetY2 = 0, offsetX1 = 0, offsetX2 = 0, textOffsetX = 0, textOffsetY = 0, subTextColor }) {
-  // landscape: 4096×2000, portrait: 2000×4096
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, graphicShadow = true, showText = true, textOffsetX = 0, textOffsetY = 0, subTextColor, slots = [] }) {
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
   const canvasW = (orientation === 'landscape' ? 620 : 320) * scale
@@ -549,29 +548,24 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
   const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = subTextColor || (isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)')
-
-  // Phone scale — fill ~85% of canvas height
-  const phoneSc = scale * (canvasH * 0.82) / (device.frameWidth * 2.2)
+  const phoneSc = scale * (canvasH * 0.78) / (device.frameWidth * 2.2)
   const isLand = orientation === 'landscape'
 
   return (
     <div ref={cardRef} style={{
       width: canvasW, height: canvasH, background: isTransparentBg ? 'transparent' : bgColor,
       borderRadius: 12 * scale, overflow: 'hidden', position: 'relative',
-      display: 'flex', flexDirection: isLand ? 'row' : 'column',
     }}>
-      {/* Text area */}
+      {/* Text area — absolute positioned */}
       {showText && (
         <div style={{
-          flex: isLand ? '0 0 38%' : '0 0 25%',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: isLand ? 'center' : 'flex-end',
-          alignItems: isLand ? 'flex-start' : 'center',
-          padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
+          position: 'absolute',
+          left: isLand ? `${(28 + textOffsetX) * scale}px` : '50%',
+          top: isLand ? '50%' : `${(16 + textOffsetY) * scale}px`,
+          transform: isLand ? `translateY(-50%)` : `translateX(-50%)`,
+          zIndex: 10,
           textAlign: isLand ? 'left' : 'center',
-          position: 'relative',
-          left: textOffsetX * scale,
-          top: textOffsetY * scale,
+          maxWidth: isLand ? '40%' : '80%',
         }}>
           <h2 style={{
             fontSize: titleSize * scale, fontWeight: 800, color: textColor,
@@ -586,77 +580,27 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         </div>
       )}
 
-      {/* Mockup area */}
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        position: 'relative', overflow: 'visible',
-        paddingBottom: 0,
-      }}>
-        {layout === 'dual' && images.length >= 1 && (() => {
-          const sf1 = graphicShadow
-            ? `drop-shadow(${(tilt1 > 0 ? 10 : -10) * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`
-            : 'none'
-          const sf2 = graphicShadow
-            ? `drop-shadow(${(tilt2 > 0 ? 10 : -10) * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
-            : 'none'
-          // front phone = less absolute tilt (closer to 0)
-          const z1 = Math.abs(tilt1) <= Math.abs(tilt2) ? 2 : 1
-          const z2 = Math.abs(tilt2) <= Math.abs(tilt1) ? 2 : 1
-          return (
-            <div style={{
-              position: 'relative',
-              width: '80%', height: '100%',
-              perspective: `${600 * scale}px`,
-              perspectiveOrigin: '50% 80%',
-            }}>
-              {/* Phone 1 */}
-              <div style={{
-                position: 'absolute',
-                left: `calc(5% + ${(offsetX1 - phonesGap) * scale}px)`,
-                bottom: `${(-4 + offsetY1) * scale}px`,
-                zIndex: z1,
-                transform: `rotateY(${tilt1}deg)`,
-                transformStyle: 'preserve-3d',
-                transformOrigin: 'center bottom',
-                filter: sf1,
-              }}>
-                <Device3D src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} depth={8} />
-              </div>
-              {/* Phone 2 */}
-              <div style={{
-                position: 'absolute',
-                right: `calc(-2% + ${(-offsetX2 - phonesGap) * scale}px)`,
-                bottom: `${(-4 + offsetY2) * scale}px`,
-                zIndex: z2,
-                transform: `rotateY(${tilt2}deg)`,
-                transformStyle: 'preserve-3d',
-                transformOrigin: 'center bottom',
-                filter: sf2,
-              }}>
-                <Device3D src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} depth={8} />
-              </div>
-            </div>
-          )
-        })()}
-
-        {layout === 'single' && images.length >= 1 && (() => {
-          const singleShadow = graphicShadow
-            ? `drop-shadow(${(tilt1 > 0 ? 10 : -10) * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
-            : 'none'
-          return (
-            <div style={{ perspective: `${500 * scale}px`, perspectiveOrigin: '50% 80%', transform: `translate(${offsetX1 * scale}px, ${-offsetY1 * scale}px)` }}>
-              <div style={{
-                transform: `rotateY(${tilt1}deg)`,
-                transformStyle: 'preserve-3d',
-                transformOrigin: 'center bottom',
-                filter: singleShadow,
-              }}>
-                <Device3D src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} depth={8} />
-              </div>
-            </div>
-          )
-        })()}
-      </div>
+      {/* Device slots — flat overlapping */}
+      {slots.map((slot, i) => {
+        if (!slot.visible) return null
+        const imgSrc = images[i]?.src || images[0]?.src
+        if (!imgSrc) return null
+        const sf = graphicShadow
+          ? `drop-shadow(${4 * scale}px ${8 * scale}px ${24 * scale}px rgba(0,0,0,0.25))`
+          : 'none'
+        return (
+          <div key={i} style={{
+            position: 'absolute',
+            left: `calc(50% + ${slot.x * scale}px)`,
+            top: `calc(50% + ${slot.y * scale}px)`,
+            transform: `translate(-50%, -50%) rotate(${slot.rotate || 0}deg) scale(${slot.scale || 1})`,
+            zIndex: slot.z || (i + 1),
+            filter: sf,
+          }}>
+            <DeviceFrame src={imgSrc} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -678,23 +622,24 @@ export default function App() {
   const [lang, setLang] = useState('en')
   const t = T[lang]
   const [tab, setTab] = useState('simple') // 'simple' | 'appstore' | 'graphic'
-  const [graphicLayout, setGraphicLayout] = useState('dual') // 'dual' | 'single'
   const [graphicOrientation, setGraphicOrientation] = useState('landscape') // 'landscape' | 'portrait'
   const [graphicTitleSize, setGraphicTitleSize] = useState(24)
   const [graphicSubSize, setGraphicSubSize] = useState(14)
   const [asFont, setAsFont] = useState(FONT_OPTIONS[0])
-  const [graphicPhonesGap, setGraphicPhonesGap] = useState(0)
   const [graphicShadow, setGraphicShadow] = useState(true)
   const [graphicShowText, setGraphicShowText] = useState(true)
   const [graphicTransparentBg, setGraphicTransparentBg] = useState(false)
-  const [grTilt1, setGrTilt1] = useState(25)   // phone 1 rotateY
-  const [grTilt2, setGrTilt2] = useState(-15)  // phone 2 rotateY
-  const [grOffsetY1, setGrOffsetY1] = useState(0)  // phone 1 vertical offset
-  const [grOffsetY2, setGrOffsetY2] = useState(0)  // phone 2 vertical offset
-  const [grOffsetX1, setGrOffsetX1] = useState(0)  // phone 1 horizontal offset
-  const [grOffsetX2, setGrOffsetX2] = useState(0)  // phone 2 horizontal offset
-  const [grTextOffsetX, setGrTextOffsetX] = useState(0)  // text horizontal offset
-  const [grTextOffsetY, setGrTextOffsetY] = useState(0)  // text vertical offset
+  const [grTextOffsetX, setGrTextOffsetX] = useState(0)
+  const [grTextOffsetY, setGrTextOffsetY] = useState(0)
+  // 4 device slots: { visible, x, y, rotate, z, scale }
+  const defaultSlots = [
+    { visible: true, x: 40, y: 20, rotate: -5, z: 2, scale: 1 },
+    { visible: true, x: 140, y: -10, rotate: 3, z: 3, scale: 1 },
+    { visible: false, x: -60, y: 30, rotate: -8, z: 1, scale: 0.95 },
+    { visible: false, x: 220, y: 10, rotate: 6, z: 4, scale: 0.95 },
+  ]
+  const [grSlots, setGrSlots] = useState(defaultSlots)
+  const updateSlot = (idx, key, val) => setGrSlots(prev => prev.map((s, i) => i === idx ? { ...s, [key]: val } : s))
   const [asSubColor, setAsSubColor] = useState('')  // subtitle custom color
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
@@ -755,22 +700,15 @@ export default function App() {
       if (s.asGap != null) setAsGap(s.asGap)
       if (s.textMode) setTextMode(s.textMode)
       if (s.activeFormats) setActiveFormats(s.activeFormats)
-      if (s.graphicLayout) setGraphicLayout(s.graphicLayout)
       if (s.graphicOrientation) setGraphicOrientation(s.graphicOrientation)
       if (s.graphicTitleSize != null) setGraphicTitleSize(s.graphicTitleSize)
       if (s.graphicSubSize != null) setGraphicSubSize(s.graphicSubSize)
-      if (s.graphicPhonesGap != null) setGraphicPhonesGap(s.graphicPhonesGap)
       if (s.graphicShadow != null) setGraphicShadow(s.graphicShadow)
       if (s.graphicShowText != null) setGraphicShowText(s.graphicShowText)
       if (s.graphicTransparentBg != null) setGraphicTransparentBg(s.graphicTransparentBg)
-      if (s.grTilt1 != null) setGrTilt1(s.grTilt1)
-      if (s.grTilt2 != null) setGrTilt2(s.grTilt2)
-      if (s.grOffsetY1 != null) setGrOffsetY1(s.grOffsetY1)
-      if (s.grOffsetY2 != null) setGrOffsetY2(s.grOffsetY2)
-      if (s.grOffsetX1 != null) setGrOffsetX1(s.grOffsetX1)
-      if (s.grOffsetX2 != null) setGrOffsetX2(s.grOffsetX2)
       if (s.grTextOffsetX != null) setGrTextOffsetX(s.grTextOffsetX)
       if (s.grTextOffsetY != null) setGrTextOffsetY(s.grTextOffsetY)
+      if (s.grSlots) setGrSlots(s.grSlots)
       if (draft.images?.length) setImages(draft.images)
     } catch (e) { console.warn('Draft restore failed:', e) }
   }, [])
@@ -788,10 +726,9 @@ export default function App() {
             frameColorId: frameColor.id, fontId: asFont.id,
             asBgColor, asTextColor, asSubColor, asTitle, asSubtitle,
             asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
-            graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
-            graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
-            grTilt1, grTilt2, grOffsetY1, grOffsetY2,
-            grOffsetX1, grOffsetX2, grTextOffsetX, grTextOffsetY,
+            graphicOrientation, graphicTitleSize, graphicSubSize,
+            graphicShadow, graphicShowText, graphicTransparentBg,
+            grTextOffsetX, grTextOffsetY, grSlots,
           },
           images: images.slice(0, 20), // limit to 20 images to avoid localStorage overflow
         }
@@ -804,10 +741,9 @@ export default function App() {
   }, [tab, lang, device, bg, padding, shadow, frameColor, asFont,
       asBgColor, asTextColor, asSubColor, asTitle, asSubtitle,
       asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
-      graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
-      graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
-      grTilt1, grTilt2, grOffsetY1, grOffsetY2,
-      grOffsetX1, grOffsetX2, grTextOffsetX, grTextOffsetY, images])
+      graphicOrientation, graphicTitleSize, graphicSubSize,
+      graphicShadow, graphicShowText, graphicTransparentBg,
+      grTextOffsetX, grTextOffsetY, grSlots, images])
 
   /* ── File handling ─────────────────────────────────────────── */
   const handleFiles = useCallback((files) => {
@@ -988,10 +924,10 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
               <div style={{ position: 'absolute', left: -99999, top: 0, pointerEvents: 'none', overflow: 'visible' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} offsetX1={grOffsetX1} offsetX2={grOffsetX2} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} />
+                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} offsetX1={grOffsetX1} offsetX2={grOffsetX2} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
@@ -1288,10 +1224,6 @@ export default function App() {
                 </Section>
 
                 <Section title="Layout" icon={Layers}>
-                  <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 mb-2">
-                    <button onClick={() => setGraphicLayout('dual')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'dual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>2 Phones</button>
-                    <button onClick={() => setGraphicLayout('single')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'single' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>1 Phone</button>
-                  </div>
                   <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
                     <button onClick={() => setGraphicOrientation('landscape')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicOrientation === 'landscape' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Landscape</button>
                     <button onClick={() => setGraphicOrientation('portrait')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicOrientation === 'portrait' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Portrait</button>
@@ -1347,49 +1279,46 @@ export default function App() {
                   </div>
                 </Section>
 
-                <Section title="기기 1 (왼쪽)" icon={Smartphone}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
-                    <input type="range" min={-45} max={45} value={grTilt1} onChange={e => setGrTilt1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt1}°</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
-                    <input type="range" min={-100} max={100} value={grOffsetX1} onChange={e => setGrOffsetX1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetX1}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
-                    <input type="range" min={-60} max={60} value={grOffsetY1} onChange={e => setGrOffsetY1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY1}</span>
-                  </div>
-                </Section>
-
-                <Section title="기기 2 (오른쪽)" icon={Smartphone}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
-                    <input type="range" min={-45} max={45} value={grTilt2} onChange={e => setGrTilt2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt2}°</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
-                    <input type="range" min={-100} max={100} value={grOffsetX2} onChange={e => setGrOffsetX2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetX2}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
-                    <input type="range" min={-60} max={60} value={grOffsetY2} onChange={e => setGrOffsetY2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY2}</span>
-                  </div>
-                </Section>
+                {grSlots.map((slot, i) => (
+                  <Section key={i} title={`기기 ${i + 1}`} icon={Smartphone}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] text-gray-400 font-bold">표시</span>
+                      <button onClick={() => updateSlot(i, 'visible', !slot.visible)} className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${slot.visible ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'}`}>{slot.visible ? 'ON' : 'OFF'}</button>
+                    </div>
+                    {slot.visible && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-400 w-8 shrink-0">좌우</span>
+                          <input type="range" min={-250} max={250} value={slot.x} onChange={e => updateSlot(i, 'x', Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                          <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{slot.x}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-gray-400 w-8 shrink-0">상하</span>
+                          <input type="range" min={-250} max={250} value={slot.y} onChange={e => updateSlot(i, 'y', Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                          <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{slot.y}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-gray-400 w-8 shrink-0">회전</span>
+                          <input type="range" min={-30} max={30} value={slot.rotate} onChange={e => updateSlot(i, 'rotate', Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                          <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{slot.rotate}°</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-gray-400 w-8 shrink-0">크기</span>
+                          <input type="range" min={50} max={150} value={Math.round(slot.scale * 100)} onChange={e => updateSlot(i, 'scale', Number(e.target.value) / 100)} className="flex-1 accent-gray-900 h-1" />
+                          <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{Math.round(slot.scale * 100)}%</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] text-gray-400 w-8 shrink-0">순서</span>
+                          <input type="range" min={1} max={4} value={slot.z} onChange={e => updateSlot(i, 'z', Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                          <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{slot.z}</span>
+                        </div>
+                      </>
+                    )}
+                  </Section>
+                ))}
 
                 <Section title="목업 설정" icon={Layers}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 w-12 shrink-0">간격</span>
-                    <input type="range" min={-60} max={60} value={graphicPhonesGap} onChange={e => setGraphicPhonesGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
-                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicPhonesGap}px</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">그림자</span>
                     <button onClick={() => setGraphicShadow(!graphicShadow)} className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${graphicShadow ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500'}`}>{graphicShadow ? 'ON' : 'OFF'}</button>
                   </div>
