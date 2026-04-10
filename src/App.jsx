@@ -514,36 +514,51 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         paddingBottom: 0,
       }}>
         {layout === 'dual' && images.length >= 1 && (
-          <div style={{ position: 'relative', transform: `translateY(${14 * scale}px)`, width: '70%', height: '100%' }}>
-            {/* Back phone — slightly behind, left, smaller */}
+          <div style={{
+            position: 'relative',
+            transform: `translateY(${10 * scale}px)`,
+            width: '75%', height: '100%',
+            perspective: `${1200 * scale}px`,
+          }}>
+            {/* Back phone — tilted left, showing right edge */}
             <div style={{
               position: 'absolute',
-              left: isLand ? '8%' : '10%',
+              left: isLand ? '5%' : '8%',
               bottom: 0,
               zIndex: 1,
-              filter: `drop-shadow(0 ${10 * scale}px ${30 * scale}px rgba(0,0,0,0.2))`,
+              transform: `rotateY(18deg) rotateX(-2deg) rotateZ(-1deg)`,
+              transformOrigin: 'center bottom',
+              filter: `drop-shadow(${8 * scale}px ${12 * scale}px ${28 * scale}px rgba(0,0,0,0.3))`,
             }}>
-              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 0.95} frameColor={frameColor} />
+              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 0.92} frameColor={frameColor} />
             </div>
-            {/* Front phone — overlapping right, larger, in front */}
+            {/* Front phone — tilted slightly right, showing left edge */}
             <div style={{
               position: 'absolute',
-              right: isLand ? '-5%' : '0%',
-              bottom: -8 * scale,
+              right: isLand ? '-2%' : '2%',
+              bottom: -6 * scale,
               zIndex: 2,
-              filter: `drop-shadow(0 ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.25))`,
+              transform: `rotateY(-10deg) rotateX(-1deg) rotateZ(1deg)`,
+              transformOrigin: 'center bottom',
+              filter: `drop-shadow(${-6 * scale}px ${16 * scale}px ${32 * scale}px rgba(0,0,0,0.3))`,
             }}>
-              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.08} frameColor={frameColor} />
+              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.05} frameColor={frameColor} />
             </div>
           </div>
         )}
 
         {layout === 'single' && images.length >= 1 && (
           <div style={{
-            transform: `translateY(${14 * scale}px)`,
-            filter: `drop-shadow(0 ${12 * scale}px ${32 * scale}px rgba(0,0,0,0.25))`,
+            perspective: `${1000 * scale}px`,
+            transform: `translateY(${10 * scale}px)`,
           }}>
-            <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
+            <div style={{
+              transform: `rotateY(-12deg) rotateX(-2deg)`,
+              transformOrigin: 'center bottom',
+              filter: `drop-shadow(${-6 * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.3))`,
+            }}>
+              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
+            </div>
           </div>
         )}
       </div>
