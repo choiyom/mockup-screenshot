@@ -392,7 +392,7 @@ function DeviceFrame({ src, device, shadow, scale = 1, frameColor }) {
 function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor }) {
   const bgStyle = bg.isTransparent ? { background: 'transparent' } : bg.value.includes('gradient') ? { background: bg.value } : { backgroundColor: bg.value }
   return (
-    <div ref={cardRef} style={{ ...bgStyle, padding: padding * scale, borderRadius: 16 * scale, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div ref={cardRef} style={{ ...bgStyle, padding: padding * scale, borderRadius: 16 * scale, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <DeviceFrame src={src} device={device} shadow={shadow.value} scale={scale} frameColor={frameColor} />
     </div>
   )
@@ -654,9 +654,87 @@ export default function App() {
   const [activeFormats, setActiveFormats] = useState(['as-ip-6.7']) // checked format IDs
   const [previewFormat, setPreviewFormat] = useState(null) // format to preview in detail
 
+  const [draftSaved, setDraftSaved] = useState(false)
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
   const graphicRef = useRef(null)
+  const saveTimerRef = useRef(null)
+
+  /* ── Draft auto-save / restore ────────────────────────────── */
+  // Restore on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mockup-app-draft')
+      if (!raw) return
+      const draft = JSON.parse(raw)
+      if (!draft || draft.version !== 1) return
+      const s = draft.state
+      if (s.tab) setTab(s.tab)
+      if (s.lang) setLang(s.lang)
+      if (s.deviceId) { const d = DEVICES.find(x => x.id === s.deviceId); if (d) setDevice(d) }
+      if (s.bgId) { const b = BACKGROUNDS.find(x => x.id === s.bgId); if (b) setBg(b) }
+      if (s.padding != null) setPadding(s.padding)
+      if (s.shadowId) { const sh = SHADOWS.find(x => x.id === s.shadowId); if (sh) setShadow(sh) }
+      if (s.frameColorId) { const fc = FRAME_COLORS.find(x => x.id === s.frameColorId); if (fc) setFrameColor(fc) }
+      if (s.fontId) { const f = FONT_OPTIONS.find(x => x.id === s.fontId); if (f) setAsFont(f) }
+      if (s.asBgColor) setAsBgColor(s.asBgColor)
+      if (s.asTextColor) setAsTextColor(s.asTextColor)
+      if (s.asSubColor) setAsSubColor(s.asSubColor)
+      if (s.asTitle) setAsTitle(s.asTitle)
+      if (s.asSubtitle) setAsSubtitle(s.asSubtitle)
+      if (s.asTitleSize != null) setAsTitleSize(s.asTitleSize)
+      if (s.asSubSize != null) setAsSubSize(s.asSubSize)
+      if (s.asTextTop != null) setAsTextTop(s.asTextTop)
+      if (s.asGap != null) setAsGap(s.asGap)
+      if (s.textMode) setTextMode(s.textMode)
+      if (s.activeFormats) setActiveFormats(s.activeFormats)
+      if (s.graphicLayout) setGraphicLayout(s.graphicLayout)
+      if (s.graphicOrientation) setGraphicOrientation(s.graphicOrientation)
+      if (s.graphicTitleSize != null) setGraphicTitleSize(s.graphicTitleSize)
+      if (s.graphicSubSize != null) setGraphicSubSize(s.graphicSubSize)
+      if (s.graphicPhonesGap != null) setGraphicPhonesGap(s.graphicPhonesGap)
+      if (s.graphicShadow != null) setGraphicShadow(s.graphicShadow)
+      if (s.graphicShowText != null) setGraphicShowText(s.graphicShowText)
+      if (s.graphicTransparentBg != null) setGraphicTransparentBg(s.graphicTransparentBg)
+      if (s.grTilt1 != null) setGrTilt1(s.grTilt1)
+      if (s.grTilt2 != null) setGrTilt2(s.grTilt2)
+      if (s.grOffsetY1 != null) setGrOffsetY1(s.grOffsetY1)
+      if (s.grOffsetY2 != null) setGrOffsetY2(s.grOffsetY2)
+      if (draft.images?.length) setImages(draft.images)
+    } catch (e) { console.warn('Draft restore failed:', e) }
+  }, [])
+
+  // Auto-save (debounced 2s)
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        const draft = {
+          version: 1,
+          savedAt: new Date().toISOString(),
+          state: {
+            tab, lang, deviceId: device.id, bgId: bg.id, padding, shadowId: shadow.id,
+            frameColorId: frameColor.id, fontId: asFont.id,
+            asBgColor, asTextColor, asSubColor, asTitle, asSubtitle,
+            asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
+            graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
+            graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
+            grTilt1, grTilt2, grOffsetY1, grOffsetY2,
+          },
+          images: images.slice(0, 20), // limit to 20 images to avoid localStorage overflow
+        }
+        localStorage.setItem('mockup-app-draft', JSON.stringify(draft))
+        setDraftSaved(true)
+        setTimeout(() => setDraftSaved(false), 2000)
+      } catch (e) { console.warn('Draft save failed:', e) }
+    }, 2000)
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
+  }, [tab, lang, device, bg, padding, shadow, frameColor, asFont,
+      asBgColor, asTextColor, asSubColor, asTitle, asSubtitle,
+      asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
+      graphicLayout, graphicOrientation, graphicTitleSize, graphicSubSize,
+      graphicPhonesGap, graphicShadow, graphicShowText, graphicTransparentBg,
+      grTilt1, grTilt2, grOffsetY1, grOffsetY2, images])
 
   /* ── File handling ─────────────────────────────────────────── */
   const handleFiles = useCallback((files) => {
@@ -704,16 +782,31 @@ export default function App() {
 
   /* ── Export single ─────────────────────────────────────────── */
   const exportSingle = useCallback(async (id) => {
-    const el = cardRefs.current[id]
-    if (!el) return
+    const imgName = images.find(i => i.id === id)?.name || id
     try {
-      const dataUrl = await toPng(el, { pixelRatio: 2, cacheBust: true, backgroundColor: bg.isTransparent && tab === 'simple' ? null : undefined })
-      const link = document.createElement('a')
-      link.download = `mockup-${images.find(i => i.id === id)?.name || id}.png`
-      link.href = dataUrl
-      link.click()
+      if (tab === 'simple') {
+        const el = cardRefs.current[id]
+        if (!el) return
+        const dataUrl = await toPng(el, { pixelRatio: 2, cacheBust: true, backgroundColor: bg.isTransparent ? null : undefined })
+        const link = document.createElement('a')
+        link.download = `mockup-${imgName}.png`
+        link.href = dataUrl
+        link.click()
+      } else if (tab === 'appstore') {
+        // 첫 번째 활성 포맷의 ref를 사용
+        const fmt = STORE_PRESETS.flatMap(s => s.formats).find(f => activeFormats.includes(f.id))
+        if (!fmt) return
+        const el = cardRefs.current[`${id}-${fmt.id}`]
+        if (!el) return
+        const ratio = fmt.w / 360
+        const dataUrl = await toPng(el, { pixelRatio: ratio, cacheBust: true })
+        const link = document.createElement('a')
+        link.download = `mockup-${imgName}-${fmt.label.replace(/["\s]/g, '_')}.png`
+        link.href = dataUrl
+        link.click()
+      }
     } catch (err) { console.error('Export failed:', err) }
-  }, [bg, images, tab])
+  }, [bg, images, tab, activeFormats])
 
   /* ── Export ALL as ZIP ─────────────────────────────────────── */
   const exportAllZip = useCallback(async () => {
@@ -782,6 +875,10 @@ export default function App() {
           {images.length > 0 && <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">{t.imgCount(images.length)}</span>}
         </div>
         <div className="flex items-center gap-2">
+          {draftSaved && <span className="text-[10px] text-emerald-500 font-medium animate-pulse">Saved</span>}
+          <button onClick={() => { localStorage.removeItem('mockup-app-draft'); window.location.reload() }} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Reset all settings">
+            Reset
+          </button>
           {images.length > 0 && (
             <button onClick={clearAll} className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
               <Trash2 className="w-3.5 h-3.5" />{t.clearAll}
@@ -817,11 +914,11 @@ export default function App() {
             /* Graphic tab — show large canvas preview */
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
-              <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} />
+              <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} subTextColor={asSubColor} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} subTextColor={asSubColor} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
@@ -871,7 +968,7 @@ export default function App() {
                 {images.map((img) => (
                   <div key={img.id} className="group relative flex flex-col items-center">
                     {/* Hidden full-res export targets */}
-                    <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
+                    <div style={{ position: 'fixed', left: 0, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
                       ) : (
