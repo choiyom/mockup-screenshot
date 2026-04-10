@@ -1275,12 +1275,12 @@ export default function App() {
                 <Section title="텍스트 위치" icon={Move}>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">좌우</span>
-                    <input type="range" min={-80} max={80} value={grTextOffsetX} onChange={e => setGrTextOffsetX(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <input type="range" min={-150} max={150} value={grTextOffsetX} onChange={e => setGrTextOffsetX(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTextOffsetX}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
-                    <input type="range" min={-80} max={80} value={grTextOffsetY} onChange={e => setGrTextOffsetY(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <input type="range" min={-150} max={150} value={grTextOffsetY} onChange={e => setGrTextOffsetY(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTextOffsetY}</span>
                   </div>
                 </Section>
