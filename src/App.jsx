@@ -542,13 +542,13 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
 function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, graphicShadow = true, showText = true, textOffsetX = 0, textOffsetY = 0, subTextColor, slots = [] }) {
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
-  const canvasW = (orientation === 'landscape' ? 820 : 400) * scale
+  const canvasW = (orientation === 'landscape' ? 620 : 320) * scale
   const canvasH = canvasW * (baseH / baseW)
   const isTransparentBg = bgColor === 'transparent'
   const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = subTextColor || (isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)')
-  const phoneSc = scale * (canvasH * 0.95) / (device.frameWidth * 2.2)
+  const phoneSc = scale * (canvasH * 0.82) / (device.frameWidth * 2.2)
   const isLand = orientation === 'landscape'
 
   return (
@@ -927,7 +927,7 @@ export default function App() {
                 <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={1.4} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
