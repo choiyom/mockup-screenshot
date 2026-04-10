@@ -560,8 +560,8 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
       {showText && (
         <div style={{
           position: 'absolute',
-          left: isLand ? `${(28 + textOffsetX) * scale}px` : '50%',
-          top: isLand ? '50%' : `${(16 + textOffsetY) * scale}px`,
+          left: isLand ? `${(28 + textOffsetX) * scale}px` : `calc(50% + ${textOffsetX * scale}px)`,
+          top: isLand ? `calc(50% + ${textOffsetY * scale}px)` : `${(16 + textOffsetY) * scale}px`,
           transform: isLand ? `translateY(-50%)` : `translateX(-50%)`,
           zIndex: 10,
           textAlign: isLand ? 'left' : 'center',
