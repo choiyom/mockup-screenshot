@@ -464,6 +464,81 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
+   Two layouts: dual-phone or single-tilted
+   ═══════════════════════════════════════════════════════════════ */
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14 }) {
+  // 4096×2000 base → preview at scale
+  const canvasW = 600 * scale
+  const canvasH = canvasW * (2000 / 4096)
+  const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
+  const textColor = customTextColor || autoTextColor
+  const subColor = isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)'
+  const phoneSc = scale * (canvasH * 0.7) / (device.frameWidth * 2.1)
+
+  return (
+    <div ref={cardRef} style={{
+      width: canvasW, height: canvasH, background: bgColor,
+      borderRadius: 12 * scale, overflow: 'hidden', position: 'relative',
+      display: 'flex',
+    }}>
+      {/* Text area — left 40% */}
+      <div style={{
+        flex: '0 0 40%', display: 'flex', flexDirection: 'column',
+        justifyContent: 'center', padding: `${20 * scale}px ${24 * scale}px`,
+      }}>
+        <h2 style={{
+          fontSize: titleSize * scale, fontWeight: 800, color: textColor,
+          lineHeight: 1.3, margin: 0, wordBreak: 'keep-all', letterSpacing: '-0.02em',
+        }}>{title || 'Your App Title'}</h2>
+        <p style={{
+          fontSize: subSize * scale, fontWeight: 500, color: subColor,
+          lineHeight: 1.5, marginTop: 8 * scale, whiteSpace: 'pre-line', wordBreak: 'keep-all',
+        }}>{subtitle || 'App description goes here'}</p>
+      </div>
+
+      {/* Mockup area — right 60% */}
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {layout === 'dual' && images.length >= 1 && (
+          <>
+            {/* Phone 1 — slightly left, rotated */}
+            <div style={{
+              position: 'absolute',
+              transform: `perspective(${800 * scale}px) rotateY(-12deg) rotateX(2deg)`,
+              left: '5%', bottom: '-5%',
+              filter: `drop-shadow(0 ${12 * scale}px ${32 * scale}px rgba(0,0,0,0.25))`,
+            }}>
+              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+            </div>
+            {/* Phone 2 — right, different angle */}
+            <div style={{
+              position: 'absolute',
+              transform: `perspective(${800 * scale}px) rotateY(-8deg) rotateX(1deg)`,
+              right: '5%', bottom: '-8%',
+              filter: `drop-shadow(0 ${16 * scale}px ${40 * scale}px rgba(0,0,0,0.3))`,
+            }}>
+              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.05} frameColor={frameColor} />
+            </div>
+          </>
+        )}
+
+        {layout === 'single' && images.length >= 1 && (
+          <div style={{
+            transform: `perspective(${1000 * scale}px) rotateY(-15deg) rotateX(5deg) scale(1.05)`,
+            filter: `drop-shadow(0 ${20 * scale}px ${50 * scale}px rgba(0,0,0,0.3))`,
+          }}>
+            <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.3} frameColor={frameColor} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function isLightColor(hex) {
   if (!hex || hex === 'transparent') return true
   const c = hex.replace('#', '')
@@ -480,7 +555,10 @@ function isLightColor(hex) {
 export default function App() {
   const [lang, setLang] = useState('en')
   const t = T[lang]
-  const [tab, setTab] = useState('simple') // 'simple' | 'appstore'
+  const [tab, setTab] = useState('simple') // 'simple' | 'appstore' | 'graphic'
+  const [graphicLayout, setGraphicLayout] = useState('dual') // 'dual' | 'single'
+  const [graphicTitleSize, setGraphicTitleSize] = useState(24)
+  const [graphicSubSize, setGraphicSubSize] = useState(14)
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
   const [bg, setBg] = useState(BACKGROUNDS[5])
@@ -508,6 +586,7 @@ export default function App() {
 
   const fileInputRef = useRef(null)
   const cardRefs = useRef({})
+  const graphicRef = useRef(null)
 
   /* ── File handling ─────────────────────────────────────────── */
   const handleFiles = useCallback((files) => {
@@ -736,19 +815,41 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {/* ── GRAPHIC TAB PREVIEW ────────────────────────── */}
+          {tab === 'graphic' && images.length > 0 && (
+            <div className="flex flex-col items-center gap-4">
+              {/* Hidden export target at full canvas */}
+              <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
+                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
+              </div>
+              {/* Visible preview */}
+              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
+              <button onClick={async () => {
+                if (!graphicRef.current) return
+                try {
+                  const ratio = 4096 / 600
+                  const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true })
+                  const link = document.createElement('a')
+                  link.download = `store-graphic-${Date.now()}.png`
+                  link.href = dataUrl
+                  link.click()
+                } catch (err) { console.error(err) }
+              }} className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-[13px] font-semibold rounded-xl hover:bg-gray-800 transition-colors">
+                <Download className="w-4 h-4" />Download (4096×2000)
+              </button>
+            </div>
+          )}
         </main>
 
         {/* ── SIDEBAR ────────────────────────────────────────── */}
         <aside className="w-full lg:w-[276px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[70vh] lg:max-h-none">
           {/* Segmented Control */}
           <div className="p-4 pb-2">
-            <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
-              <button onClick={() => setTab('simple')} className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${tab === 'simple' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-                {t.simpleDevice}
-              </button>
-              <button onClick={() => setTab('appstore')} className={`flex-1 py-2 text-[12px] font-bold rounded-lg transition-all ${tab === 'appstore' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
-                {t.storeScreenshot}
-              </button>
+            <div className="flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
+              {[['simple', t.simpleDevice], ['appstore', t.storeScreenshot], ['graphic', 'Graphic']].map(([id, label]) => (
+                <button key={id} onClick={() => setTab(id)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{label}</button>
+              ))}
             </div>
           </div>
 
@@ -911,6 +1012,50 @@ export default function App() {
                     <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.gap}</span>
                     <input type="range" min={0} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
+                  </div>
+                </Section>
+              </>
+            )}
+
+            {/* ── TAB 3: Graphic ─────────────────────────────── */}
+            {tab === 'graphic' && (
+              <>
+                <Section title={t.bgColor} icon={Sun}>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
+                    <input type="text" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                  </div>
+                  <div className="flex gap-1.5 mt-2">
+                    {['#e8e4df', '#f0edf6', '#1a1a2e', '#0f172a', '#fef3e2', '#e8f4f8'].map(c => (
+                      <button key={c} onClick={() => setAsBgColor(c)} className={`w-7 h-7 rounded-lg border transition-all ${asBgColor === c ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'border-gray-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                </Section>
+
+                <Section title="Layout" icon={Layers}>
+                  <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+                    <button onClick={() => setGraphicLayout('dual')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'dual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Dual Phone</button>
+                    <button onClick={() => setGraphicLayout('single')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'single' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Single Phone</button>
+                  </div>
+                </Section>
+
+                <Section title={t.text} icon={Type}>
+                  <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.title}</label>
+                  <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                  <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.subtitle}</label>
+                  <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={t.subtitlePlaceholder} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                </Section>
+
+                <Section title={t.textSize} icon={Type}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.title}</span>
+                    <input type="range" min={12} max={48} value={graphicTitleSize} onChange={e => setGraphicTitleSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicTitleSize}px</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.subtitle}</span>
+                    <input type="range" min={8} max={28} value={graphicSubSize} onChange={e => setGraphicSubSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicSubSize}px</span>
                   </div>
                 </Section>
               </>
