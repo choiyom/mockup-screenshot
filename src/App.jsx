@@ -468,29 +468,38 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
    STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
    Two layouts: dual-phone or single-tilted
    ═══════════════════════════════════════════════════════════════ */
-function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14 }) {
-  // 4096×2000 base → preview at scale
-  const canvasW = 600 * scale
-  const canvasH = canvasW * (2000 / 4096)
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape' }) {
+  // landscape: 4096×2000, portrait: 2000×4096
+  const baseW = orientation === 'landscape' ? 4096 : 2000
+  const baseH = orientation === 'landscape' ? 2000 : 4096
+  const canvasW = (orientation === 'landscape' ? 620 : 320) * scale
+  const canvasH = canvasW * (baseH / baseW)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)'
-  const phoneSc = scale * (canvasH * 0.7) / (device.frameWidth * 2.1)
+
+  // Phone scale — fill ~85% of canvas height
+  const phoneSc = scale * (canvasH * 0.82) / (device.frameWidth * 2.2)
+  const isLand = orientation === 'landscape'
 
   return (
     <div ref={cardRef} style={{
       width: canvasW, height: canvasH, background: bgColor,
       borderRadius: 12 * scale, overflow: 'hidden', position: 'relative',
-      display: 'flex',
+      display: 'flex', flexDirection: isLand ? 'row' : 'column',
     }}>
-      {/* Text area — left 40% */}
+      {/* Text area */}
       <div style={{
-        flex: '0 0 40%', display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', padding: `${20 * scale}px ${24 * scale}px`,
+        flex: isLand ? '0 0 38%' : '0 0 25%',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: isLand ? 'center' : 'flex-end',
+        alignItems: isLand ? 'flex-start' : 'center',
+        padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
+        textAlign: isLand ? 'left' : 'center',
       }}>
         <h2 style={{
           fontSize: titleSize * scale, fontWeight: 800, color: textColor,
-          lineHeight: 1.3, margin: 0, wordBreak: 'keep-all', letterSpacing: '-0.02em',
+          lineHeight: 1.25, margin: 0, wordBreak: 'keep-all', letterSpacing: '-0.02em',
         }}>{title || 'Your App Title'}</h2>
         <p style={{
           fontSize: subSize * scale, fontWeight: 500, color: subColor,
@@ -498,40 +507,29 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         }}>{subtitle || 'App description goes here'}</p>
       </div>
 
-      {/* Mockup area — right 60% */}
+      {/* Mockup area */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'relative', overflow: 'hidden',
+        flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        position: 'relative', overflow: 'visible',
+        paddingBottom: 0,
       }}>
         {layout === 'dual' && images.length >= 1 && (
-          <>
-            {/* Phone 1 — slightly left, rotated */}
-            <div style={{
-              position: 'absolute',
-              transform: `perspective(${800 * scale}px) rotateY(-12deg) rotateX(2deg)`,
-              left: '5%', bottom: '-5%',
-              filter: `drop-shadow(0 ${12 * scale}px ${32 * scale}px rgba(0,0,0,0.25))`,
-            }}>
+          <div style={{ display: 'flex', gap: isLand ? 16 * scale : 12 * scale, alignItems: 'flex-end', transform: `translateY(${20 * scale}px)` }}>
+            <div style={{ filter: `drop-shadow(0 ${8 * scale}px ${24 * scale}px rgba(0,0,0,0.2))` }}>
               <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
             </div>
-            {/* Phone 2 — right, different angle */}
-            <div style={{
-              position: 'absolute',
-              transform: `perspective(${800 * scale}px) rotateY(-8deg) rotateX(1deg)`,
-              right: '5%', bottom: '-8%',
-              filter: `drop-shadow(0 ${16 * scale}px ${40 * scale}px rgba(0,0,0,0.3))`,
-            }}>
-              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.05} frameColor={frameColor} />
+            <div style={{ filter: `drop-shadow(0 ${8 * scale}px ${24 * scale}px rgba(0,0,0,0.2))` }}>
+              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
             </div>
-          </>
+          </div>
         )}
 
         {layout === 'single' && images.length >= 1 && (
           <div style={{
-            transform: `perspective(${1000 * scale}px) rotateY(-15deg) rotateX(5deg) scale(1.05)`,
-            filter: `drop-shadow(0 ${20 * scale}px ${50 * scale}px rgba(0,0,0,0.3))`,
+            transform: `translateY(${16 * scale}px)`,
+            filter: `drop-shadow(0 ${12 * scale}px ${32 * scale}px rgba(0,0,0,0.25))`,
           }}>
-            <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.3} frameColor={frameColor} />
+            <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
           </div>
         )}
       </div>
@@ -557,6 +555,7 @@ export default function App() {
   const t = T[lang]
   const [tab, setTab] = useState('simple') // 'simple' | 'appstore' | 'graphic'
   const [graphicLayout, setGraphicLayout] = useState('dual') // 'dual' | 'single'
+  const [graphicOrientation, setGraphicOrientation] = useState('landscape') // 'landscape' | 'portrait'
   const [graphicTitleSize, setGraphicTitleSize] = useState(24)
   const [graphicSubSize, setGraphicSubSize] = useState(14)
   const [images, setImages] = useState([])
@@ -748,14 +747,16 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
               <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
+                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
+              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
-                  const ratio = 4096 / 600
+                  const targetW = graphicOrientation === 'landscape' ? 4096 : 2000
+                  const previewW = graphicOrientation === 'landscape' ? 620 : 320
+                  const ratio = targetW / previewW
                   const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true })
                   const link = document.createElement('a')
                   link.download = `store-graphic-${Date.now()}.png`
@@ -763,7 +764,7 @@ export default function App() {
                   link.click()
                 } catch (err) { console.error(err) }
               }} className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-[13px] font-semibold rounded-xl hover:bg-gray-800 transition-colors">
-                <Download className="w-4 h-4" />Download (4096×2000)
+                <Download className="w-4 h-4" />Download ({graphicOrientation === 'landscape' ? '4096×2000' : '2000×4096'})
               </button>
             </div>
           ) : (
@@ -1032,9 +1033,13 @@ export default function App() {
                 </Section>
 
                 <Section title="Layout" icon={Layers}>
+                  <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 mb-2">
+                    <button onClick={() => setGraphicLayout('dual')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'dual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>2 Phones</button>
+                    <button onClick={() => setGraphicLayout('single')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'single' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>1 Phone</button>
+                  </div>
                   <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
-                    <button onClick={() => setGraphicLayout('dual')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'dual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Dual Phone</button>
-                    <button onClick={() => setGraphicLayout('single')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicLayout === 'single' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Single Phone</button>
+                    <button onClick={() => setGraphicOrientation('landscape')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicOrientation === 'landscape' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Landscape</button>
+                    <button onClick={() => setGraphicOrientation('portrait')} className={`flex-1 py-2 text-[11px] font-bold rounded-md transition-all ${graphicOrientation === 'portrait' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>Portrait</button>
                   </div>
                 </Section>
 
