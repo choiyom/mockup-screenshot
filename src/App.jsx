@@ -458,7 +458,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        paddingTop: gap * scale,
+        marginTop: gap * scale,
       }}>
         <DeviceFrame src={src} device={device} shadow={shadow.value} scale={deviceScale} frameColor={frameColor} />
       </div>
@@ -518,46 +518,44 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         {layout === 'dual' && images.length >= 1 && (
           <div style={{
             position: 'relative',
-            transform: `translateY(${10 * scale}px)`,
-            width: '75%', height: '100%',
-            perspective: `${1200 * scale}px`,
+            width: '80%', height: '100%',
+            perspective: `${1800 * scale}px`,
           }}>
-            {/* Back phone — tilted left, showing right edge */}
+            {/* Left phone — same size, tilted showing right edge */}
             <div style={{
               position: 'absolute',
-              left: isLand ? '5%' : '8%',
-              bottom: 0,
+              left: isLand ? '2%' : '5%',
+              bottom: isLand ? `${-4 * scale}px` : 0,
               zIndex: 1,
-              transform: `rotateY(18deg) rotateX(-2deg) rotateZ(-1deg)`,
+              transform: `rotateY(25deg) rotateX(-2deg)`,
               transformOrigin: 'center bottom',
-              filter: `drop-shadow(${8 * scale}px ${12 * scale}px ${28 * scale}px rgba(0,0,0,0.3))`,
+              filter: `drop-shadow(${10 * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`,
             }}>
-              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 0.92} frameColor={frameColor} />
+              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
             </div>
-            {/* Front phone — tilted slightly right, showing left edge */}
+            {/* Right phone — same size, tilted showing left edge */}
             <div style={{
               position: 'absolute',
-              right: isLand ? '-2%' : '2%',
-              bottom: -6 * scale,
+              right: isLand ? '-5%' : '0%',
+              bottom: isLand ? `${-4 * scale}px` : 0,
               zIndex: 2,
-              transform: `rotateY(-10deg) rotateX(-1deg) rotateZ(1deg)`,
+              transform: `rotateY(-15deg) rotateX(-1deg)`,
               transformOrigin: 'center bottom',
-              filter: `drop-shadow(${-6 * scale}px ${16 * scale}px ${32 * scale}px rgba(0,0,0,0.3))`,
+              filter: `drop-shadow(${-8 * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`,
             }}>
-              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.05} frameColor={frameColor} />
+              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
             </div>
           </div>
         )}
 
         {layout === 'single' && images.length >= 1 && (
           <div style={{
-            perspective: `${1000 * scale}px`,
-            transform: `translateY(${10 * scale}px)`,
+            perspective: `${1200 * scale}px`,
           }}>
             <div style={{
-              transform: `rotateY(-12deg) rotateX(-2deg)`,
+              transform: `rotateY(-15deg) rotateX(-2deg)`,
               transformOrigin: 'center bottom',
-              filter: `drop-shadow(${-6 * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.3))`,
+              filter: `drop-shadow(${-8 * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`,
             }}>
               <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
             </div>
@@ -1041,7 +1039,7 @@ export default function App() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.gap}</span>
-                    <input type="range" min={-30} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <input type="range" min={-80} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
                   </div>
                 </Section>
