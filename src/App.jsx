@@ -189,6 +189,12 @@ const FRAME_COLORS = [
   { id: 'blue', label: 'Blue', body: 'linear-gradient(170deg, #8eaec4 0%, #6a8fae 40%, #527a98 60%, #8eaec4 100%)', btn: 'linear-gradient(180deg, #8eaec4, #6a8fae)', island: '#000' },
 ]
 
+const FONT_OPTIONS = [
+  { id: 'pretendard', label: 'Pretendard', family: '"Pretendard Variable", Pretendard, -apple-system, sans-serif' },
+  { id: 'suit', label: 'SUIT', family: '"SUIT Variable", "SUIT", sans-serif' },
+  { id: 'noto', label: 'Noto Sans KR', family: '"Noto Sans KR", sans-serif' },
+]
+
 /* ═══════════════════════════════════════════════════════════════
    STORE FORMAT PRESETS — export resolution + matching device
    ═══════════════════════════════════════════════════════════════ */
@@ -395,7 +401,7 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH }) {
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily }) {
   const canvasW = exportW ? exportW * scale : 360 * scale
   const canvasH = exportH ? exportH * scale : canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
@@ -435,6 +441,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
           margin: 0,
           wordBreak: 'keep-all',
           letterSpacing: '-0.02em',
+          fontFamily: fontFamily || undefined,
         }}>
           {title || '대제목을 입력하세요'}
         </h2>
@@ -446,6 +453,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
           marginTop: 6 * scale,
           whiteSpace: 'pre-line',
           wordBreak: 'keep-all',
+          fontFamily: fontFamily || undefined,
         }}>
           {subtitle || '소제목을 입력하세요'}
         </p>
@@ -470,15 +478,16 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
    STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
    Two layouts: dual-phone or single-tilted
    ═══════════════════════════════════════════════════════════════ */
-function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape' }) {
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, tiltDirection = 'right', graphicShadow = true, showText = true }) {
   // landscape: 4096×2000, portrait: 2000×4096
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
   const canvasW = (orientation === 'landscape' ? 620 : 320) * scale
   const canvasH = canvasW * (baseH / baseW)
-  const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
+  const isTransparentBg = bgColor === 'transparent'
+  const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
-  const subColor = isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)'
+  const subColor = isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)'
 
   // Phone scale — fill ~85% of canvas height
   const phoneSc = scale * (canvasH * 0.82) / (device.frameWidth * 2.2)
@@ -486,28 +495,32 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
 
   return (
     <div ref={cardRef} style={{
-      width: canvasW, height: canvasH, background: bgColor,
+      width: canvasW, height: canvasH, background: isTransparentBg ? 'transparent' : bgColor,
       borderRadius: 12 * scale, overflow: 'hidden', position: 'relative',
       display: 'flex', flexDirection: isLand ? 'row' : 'column',
     }}>
       {/* Text area */}
-      <div style={{
-        flex: isLand ? '0 0 38%' : '0 0 25%',
-        display: 'flex', flexDirection: 'column',
-        justifyContent: isLand ? 'center' : 'flex-end',
-        alignItems: isLand ? 'flex-start' : 'center',
-        padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
-        textAlign: isLand ? 'left' : 'center',
-      }}>
-        <h2 style={{
-          fontSize: titleSize * scale, fontWeight: 800, color: textColor,
-          lineHeight: 1.25, margin: 0, wordBreak: 'keep-all', letterSpacing: '-0.02em',
-        }}>{title || 'Your App Title'}</h2>
-        <p style={{
-          fontSize: subSize * scale, fontWeight: 500, color: subColor,
-          lineHeight: 1.5, marginTop: 8 * scale, whiteSpace: 'pre-line', wordBreak: 'keep-all',
-        }}>{subtitle || 'App description goes here'}</p>
-      </div>
+      {showText && (
+        <div style={{
+          flex: isLand ? '0 0 38%' : '0 0 25%',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: isLand ? 'center' : 'flex-end',
+          alignItems: isLand ? 'flex-start' : 'center',
+          padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
+          textAlign: isLand ? 'left' : 'center',
+        }}>
+          <h2 style={{
+            fontSize: titleSize * scale, fontWeight: 800, color: textColor,
+            lineHeight: 1.25, margin: 0, wordBreak: 'keep-all', letterSpacing: '-0.02em',
+            fontFamily: fontFamily || undefined,
+          }}>{title || 'Your App Title'}</h2>
+          <p style={{
+            fontSize: subSize * scale, fontWeight: 500, color: subColor,
+            lineHeight: 1.5, marginTop: 8 * scale, whiteSpace: 'pre-line', wordBreak: 'keep-all',
+            fontFamily: fontFamily || undefined,
+          }}>{subtitle || 'App description goes here'}</p>
+        </div>
+      )}
 
       {/* Mockup area */}
       <div style={{
@@ -515,52 +528,67 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         position: 'relative', overflow: 'visible',
         paddingBottom: 0,
       }}>
-        {layout === 'dual' && images.length >= 1 && (
-          <div style={{
-            position: 'relative',
-            width: '80%', height: '100%',
-            perspective: `${1800 * scale}px`,
-          }}>
-            {/* Left phone — same size, tilted showing right edge */}
+        {layout === 'dual' && images.length >= 1 && (() => {
+          const tiltR = tiltDirection === 'right'
+          const shadowFilter = graphicShadow
+            ? `drop-shadow(${(tiltR ? 10 : -10) * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`
+            : 'none'
+          const shadowFilter2 = graphicShadow
+            ? `drop-shadow(${(tiltR ? -8 : 8) * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
+            : 'none'
+          return (
             <div style={{
-              position: 'absolute',
-              left: isLand ? '2%' : '5%',
-              bottom: isLand ? `${-4 * scale}px` : 0,
-              zIndex: 1,
-              transform: `rotateY(25deg) rotateX(-2deg)`,
-              transformOrigin: 'center bottom',
-              filter: `drop-shadow(${10 * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`,
+              position: 'relative',
+              width: '80%', height: '100%',
+              perspective: `${800 * scale}px`,
             }}>
-              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+              {/* Phone 1 */}
+              <div style={{
+                position: 'absolute',
+                left: tiltR ? `calc(2% - ${phonesGap * scale}px)` : undefined,
+                right: !tiltR ? `calc(2% - ${phonesGap * scale}px)` : undefined,
+                bottom: isLand ? `${-4 * scale}px` : 0,
+                zIndex: 1,
+                transform: `rotateY(${tiltR ? 25 : -25}deg) rotateX(-2deg)`,
+                transformOrigin: 'center bottom',
+                filter: shadowFilter,
+              }}>
+                <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+              </div>
+              {/* Phone 2 */}
+              <div style={{
+                position: 'absolute',
+                right: tiltR ? `calc(-5% - ${phonesGap * scale}px)` : undefined,
+                left: !tiltR ? `calc(-5% - ${phonesGap * scale}px)` : undefined,
+                bottom: isLand ? `${-4 * scale}px` : 0,
+                zIndex: 2,
+                transform: `rotateY(${tiltR ? -15 : 15}deg) rotateX(-1deg)`,
+                transformOrigin: 'center bottom',
+                filter: shadowFilter2,
+              }}>
+                <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+              </div>
             </div>
-            {/* Right phone — same size, tilted showing left edge */}
-            <div style={{
-              position: 'absolute',
-              right: isLand ? '-5%' : '0%',
-              bottom: isLand ? `${-4 * scale}px` : 0,
-              zIndex: 2,
-              transform: `rotateY(-15deg) rotateX(-1deg)`,
-              transformOrigin: 'center bottom',
-              filter: `drop-shadow(${-8 * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`,
-            }}>
-              <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
-        {layout === 'single' && images.length >= 1 && (
-          <div style={{
-            perspective: `${1200 * scale}px`,
-          }}>
-            <div style={{
-              transform: `rotateY(-15deg) rotateX(-2deg)`,
-              transformOrigin: 'center bottom',
-              filter: `drop-shadow(${-8 * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`,
-            }}>
-              <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
+        {layout === 'single' && images.length >= 1 && (() => {
+          const tiltR = tiltDirection === 'right'
+          const singleShadow = graphicShadow
+            ? `drop-shadow(${(tiltR ? -8 : 8) * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
+            : 'none'
+          return (
+            <div style={{ perspective: `${600 * scale}px` }}>
+              <div style={{
+                transform: `rotateY(${tiltR ? -15 : 15}deg) rotateX(-2deg)`,
+                transformOrigin: 'center bottom',
+                filter: singleShadow,
+              }}>
+                <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
+              </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
       </div>
     </div>
   )
@@ -587,6 +615,12 @@ export default function App() {
   const [graphicOrientation, setGraphicOrientation] = useState('landscape') // 'landscape' | 'portrait'
   const [graphicTitleSize, setGraphicTitleSize] = useState(24)
   const [graphicSubSize, setGraphicSubSize] = useState(14)
+  const [asFont, setAsFont] = useState(FONT_OPTIONS[0])
+  const [graphicPhonesGap, setGraphicPhonesGap] = useState(0)
+  const [graphicTiltDir, setGraphicTiltDir] = useState('right') // 'right' | 'left'
+  const [graphicShadow, setGraphicShadow] = useState(true)
+  const [graphicShowText, setGraphicShowText] = useState(true)
+  const [graphicTransparentBg, setGraphicTransparentBg] = useState(false)
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
   const [bg, setBg] = useState(BACKGROUNDS[5])
@@ -776,17 +810,17 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
               <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
+                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} tiltDirection={graphicTiltDir} graphicShadow={graphicShadow} showText={graphicShowText} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} tiltDirection={graphicTiltDir} graphicShadow={graphicShadow} showText={graphicShowText} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
                   const targetW = graphicOrientation === 'landscape' ? 4096 : 2000
                   const previewW = graphicOrientation === 'landscape' ? 620 : 320
                   const ratio = targetW / previewW
-                  const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true })
+                  const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true, backgroundColor: graphicTransparentBg ? null : undefined })
                   const link = document.createElement('a')
                   link.download = `store-graphic-${Date.now()}.png`
                   link.href = dataUrl
@@ -813,7 +847,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.8} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} />
+                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} fontFamily={asFont.family} />
                       )}
                     </div>
                   </div>
@@ -836,7 +870,7 @@ export default function App() {
                         /* Render one hidden card per active format — each has correct aspect ratio */
                         STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
                           const fmtDevice = DEVICES.find(d => d.id === fmt.deviceId) || device
-                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} />
+                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} fontFamily={asFont.family} />
                         })
                       )}
                     </div>
@@ -850,7 +884,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} />
+                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} fontFamily={asFont.family} />
                       )}
                     </div>
 
@@ -1018,6 +1052,14 @@ export default function App() {
                 </Section>
 
                 {/* Text size — always global (layout) */}
+                <Section title="폰트" icon={Type}>
+                  <div className="flex gap-1.5">
+                    {FONT_OPTIONS.map(f => (
+                      <button key={f.id} onClick={() => setAsFont(f)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${asFont.id === f.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`} style={{ fontFamily: f.family }}>{f.label}</button>
+                    ))}
+                  </div>
+                </Section>
+
                 <Section title={t.textSize} icon={Type}>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.title}</span>
@@ -1051,12 +1093,13 @@ export default function App() {
               <>
                 <Section title={t.bgColor} icon={Sun}>
                   <div className="flex items-center gap-2">
-                    <input type="color" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
-                    <input type="text" value={asBgColor} onChange={e => setAsBgColor(e.target.value)} className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                    <input type="color" value={asBgColor} onChange={e => { setAsBgColor(e.target.value); setGraphicTransparentBg(false) }} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
+                    <input type="text" value={graphicTransparentBg ? 'transparent' : asBgColor} onChange={e => { setAsBgColor(e.target.value); setGraphicTransparentBg(false) }} className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
                   </div>
                   <div className="flex gap-1.5 mt-2">
+                    <button onClick={() => setGraphicTransparentBg(!graphicTransparentBg)} className={`w-7 h-7 rounded-lg border transition-all ${graphicTransparentBg ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'border-gray-200 hover:scale-105'}`} style={{ backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)', backgroundSize: '8px 8px', backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px' }} title="투명" />
                     {['#e8e4df', '#f0edf6', '#1a1a2e', '#0f172a', '#fef3e2', '#e8f4f8'].map(c => (
-                      <button key={c} onClick={() => setAsBgColor(c)} className={`w-7 h-7 rounded-lg border transition-all ${asBgColor === c ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'border-gray-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
+                      <button key={c} onClick={() => { setAsBgColor(c); setGraphicTransparentBg(false) }} className={`w-7 h-7 rounded-lg border transition-all ${!graphicTransparentBg && asBgColor === c ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'border-gray-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
                     ))}
                   </div>
                 </Section>
@@ -1073,10 +1116,26 @@ export default function App() {
                 </Section>
 
                 <Section title={t.text} icon={Type}>
-                  <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.title}</label>
-                  <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
-                  <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.subtitle}</label>
-                  <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={t.subtitlePlaceholder} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-gray-400 font-bold">텍스트 표시</span>
+                    <button onClick={() => setGraphicShowText(!graphicShowText)} className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${graphicShowText ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'}`}>{graphicShowText ? 'ON' : 'OFF'}</button>
+                  </div>
+                  {graphicShowText && (
+                    <>
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.title}</label>
+                      <input type="text" value={asTitle} onChange={e => setAsTitle(e.target.value)} placeholder={t.titlePlaceholder} className="w-full text-[13px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 font-semibold mb-2" />
+                      <label className="text-[10px] text-gray-400 font-bold mb-1 block">{t.subtitle}</label>
+                      <textarea value={asSubtitle} onChange={e => setAsSubtitle(e.target.value)} placeholder={t.subtitlePlaceholder} rows={2} className="w-full text-[12px] bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-gray-600 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none" />
+                    </>
+                  )}
+                </Section>
+
+                <Section title="폰트" icon={Type}>
+                  <div className="flex gap-1.5">
+                    {FONT_OPTIONS.map(f => (
+                      <button key={f.id} onClick={() => setAsFont(f)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${asFont.id === f.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`} style={{ fontFamily: f.family }}>{f.label}</button>
+                    ))}
+                  </div>
                 </Section>
 
                 <Section title={t.textSize} icon={Type}>
@@ -1089,6 +1148,25 @@ export default function App() {
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">{t.subtitle}</span>
                     <input type="range" min={8} max={28} value={graphicSubSize} onChange={e => setGraphicSubSize(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicSubSize}px</span>
+                  </div>
+                </Section>
+
+                <Section title="목업 설정" icon={Smartphone}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
+                    <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 flex-1">
+                      <button onClick={() => setGraphicTiltDir('left')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${graphicTiltDir === 'left' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>← 왼쪽</button>
+                      <button onClick={() => setGraphicTiltDir('right')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${graphicTiltDir === 'right' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>오른쪽 →</button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">간격</span>
+                    <input type="range" min={-60} max={60} value={graphicPhonesGap} onChange={e => setGraphicPhonesGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicPhonesGap}px</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">그림자</span>
+                    <button onClick={() => setGraphicShadow(!graphicShadow)} className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${graphicShadow ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500'}`}>{graphicShadow ? 'ON' : 'OFF'}</button>
                   </div>
                 </Section>
               </>
