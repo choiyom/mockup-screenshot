@@ -921,13 +921,30 @@ export default function App() {
             </div>
           ) : tab === 'graphic' ? (
             /* Graphic tab — show large canvas preview */
-            <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
+            <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4 p-4">
               {/* Hidden export target */}
               <div style={{ position: 'absolute', left: -99999, top: 0, pointerEvents: 'none', overflow: 'visible' }}>
                 <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
               </div>
-              {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={1.4} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
+              {/* Visible preview — fit to container */}
+              <div className="w-full flex-1 flex items-center justify-center min-h-0 overflow-hidden" ref={el => {
+                if (!el) return
+                const card = el.querySelector('[data-graphic-preview]')
+                if (!card) return
+                const fit = () => {
+                  const s = Math.min(el.clientWidth / card.offsetWidth, el.clientHeight / card.offsetHeight, 1.8)
+                  card.style.transform = `scale(${s})`
+                  card.style.transformOrigin = 'center center'
+                }
+                fit()
+                const ro = new ResizeObserver(fit)
+                ro.observe(el)
+                el._ro = ro
+              }}>
+                <div data-graphic-preview="">
+                  <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={1} fontFamily={asFont.family} graphicShadow={graphicShadow} showText={graphicShowText} textOffsetX={grTextOffsetX} textOffsetY={grTextOffsetY} subTextColor={asSubColor} slots={grSlots} />
+                </div>
+              </div>
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
