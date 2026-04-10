@@ -743,6 +743,29 @@ export default function App() {
                 </div>
               </div>
             </div>
+          ) : tab === 'graphic' ? (
+            /* Graphic tab — show large canvas preview */
+            <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
+              {/* Hidden export target */}
+              <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
+                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
+              </div>
+              {/* Visible preview */}
+              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
+              <button onClick={async () => {
+                if (!graphicRef.current) return
+                try {
+                  const ratio = 4096 / 600
+                  const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true })
+                  const link = document.createElement('a')
+                  link.download = `store-graphic-${Date.now()}.png`
+                  link.href = dataUrl
+                  link.click()
+                } catch (err) { console.error(err) }
+              }} className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-[13px] font-semibold rounded-xl hover:bg-gray-800 transition-colors">
+                <Download className="w-4 h-4" />Download (4096×2000)
+              </button>
+            </div>
           ) : (
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="min-h-full flex flex-col gap-5">
               {/* ── Enlarged Preview ──────────────────────────── */}
@@ -816,30 +839,6 @@ export default function App() {
             </div>
           )}
 
-          {/* ── GRAPHIC TAB PREVIEW ────────────────────────── */}
-          {tab === 'graphic' && images.length > 0 && (
-            <div className="flex flex-col items-center gap-4">
-              {/* Hidden export target at full canvas */}
-              <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} />
-              </div>
-              {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} />
-              <button onClick={async () => {
-                if (!graphicRef.current) return
-                try {
-                  const ratio = 4096 / 600
-                  const dataUrl = await toPng(graphicRef.current, { pixelRatio: ratio, cacheBust: true })
-                  const link = document.createElement('a')
-                  link.download = `store-graphic-${Date.now()}.png`
-                  link.href = dataUrl
-                  link.click()
-                } catch (err) { console.error(err) }
-              }} className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-[13px] font-semibold rounded-xl hover:bg-gray-800 transition-colors">
-                <Download className="w-4 h-4" />Download (4096×2000)
-              </button>
-            </div>
-          )}
         </main>
 
         {/* ── SIDEBAR ────────────────────────────────────────── */}
