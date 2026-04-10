@@ -542,7 +542,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
 function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, graphicShadow = true, showText = true, textOffsetX = 0, textOffsetY = 0, subTextColor, slots = [] }) {
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
-  const canvasW = (orientation === 'landscape' ? 620 : 320) * scale
+  const canvasW = (orientation === 'landscape' ? 820 : 400) * scale
   const canvasH = canvasW * (baseH / baseW)
   const isTransparentBg = bgColor === 'transparent'
   const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
