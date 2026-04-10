@@ -401,12 +401,12 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily }) {
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily, subTextColor }) {
   const canvasW = exportW ? exportW * scale : 360 * scale
   const canvasH = exportH ? exportH * scale : canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
-  const subColor = isLightColor(bgColor) ? '#555' : 'rgba(255,255,255,0.7)'
+  const subColor = subTextColor || (isLightColor(bgColor) ? '#555' : 'rgba(255,255,255,0.7)')
   const deviceScale = scale * (canvasW * 0.78) / device.frameWidth
 
   return (
@@ -478,7 +478,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
    STORE GRAPHIC CARD  (Tab 3) — 4096×2000 landscape canvas
    Two layouts: dual-phone or single-tilted
    ═══════════════════════════════════════════════════════════════ */
-function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, tiltDirection = 'right', graphicShadow = true, showText = true }) {
+function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, layout = 'dual', titleSize = 24, subSize = 14, orientation = 'landscape', fontFamily, phonesGap = 0, graphicShadow = true, showText = true, tilt1 = 25, tilt2 = -15, offsetY1 = 0, offsetY2 = 0, subTextColor }) {
   // landscape: 4096×2000, portrait: 2000×4096
   const baseW = orientation === 'landscape' ? 4096 : 2000
   const baseH = orientation === 'landscape' ? 2000 : 4096
@@ -487,7 +487,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
   const isTransparentBg = bgColor === 'transparent'
   const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
-  const subColor = isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)'
+  const subColor = subTextColor || (isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)')
 
   // Phone scale — fill ~85% of canvas height
   const phoneSc = scale * (canvasH * 0.82) / (device.frameWidth * 2.2)
@@ -529,42 +529,45 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         paddingBottom: 0,
       }}>
         {layout === 'dual' && images.length >= 1 && (() => {
-          const tiltR = tiltDirection === 'right'
-          const shadowFilter = graphicShadow
-            ? `drop-shadow(${(tiltR ? 10 : -10) * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`
+          const sf1 = graphicShadow
+            ? `drop-shadow(${(tilt1 > 0 ? 10 : -10) * scale}px ${14 * scale}px ${32 * scale}px rgba(0,0,0,0.35))`
             : 'none'
-          const shadowFilter2 = graphicShadow
-            ? `drop-shadow(${(tiltR ? -8 : 8) * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
+          const sf2 = graphicShadow
+            ? `drop-shadow(${(tilt2 > 0 ? 10 : -10) * scale}px ${16 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
             : 'none'
+          // front phone = less absolute tilt (closer to 0)
+          const z1 = Math.abs(tilt1) <= Math.abs(tilt2) ? 2 : 1
+          const z2 = Math.abs(tilt2) <= Math.abs(tilt1) ? 2 : 1
           return (
             <div style={{
               position: 'relative',
               width: '80%', height: '100%',
-              perspective: `${800 * scale}px`,
+              perspective: `${600 * scale}px`,
+              perspectiveOrigin: '50% 80%',
             }}>
               {/* Phone 1 */}
               <div style={{
                 position: 'absolute',
-                left: tiltR ? `calc(2% - ${phonesGap * scale}px)` : undefined,
-                right: !tiltR ? `calc(2% - ${phonesGap * scale}px)` : undefined,
-                bottom: isLand ? `${-4 * scale}px` : 0,
-                zIndex: 1,
-                transform: `rotateY(${tiltR ? 25 : -25}deg) rotateX(-2deg)`,
+                left: `calc(5% - ${phonesGap * scale}px)`,
+                bottom: `${(-4 + offsetY1) * scale}px`,
+                zIndex: z1,
+                transform: `rotateY(${tilt1}deg)`,
+                transformStyle: 'preserve-3d',
                 transformOrigin: 'center bottom',
-                filter: shadowFilter,
+                filter: sf1,
               }}>
                 <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
               </div>
               {/* Phone 2 */}
               <div style={{
                 position: 'absolute',
-                right: tiltR ? `calc(-5% - ${phonesGap * scale}px)` : undefined,
-                left: !tiltR ? `calc(-5% - ${phonesGap * scale}px)` : undefined,
-                bottom: isLand ? `${-4 * scale}px` : 0,
-                zIndex: 2,
-                transform: `rotateY(${tiltR ? -15 : 15}deg) rotateX(-1deg)`,
+                right: `calc(-2% - ${phonesGap * scale}px)`,
+                bottom: `${(-4 + offsetY2) * scale}px`,
+                zIndex: z2,
+                transform: `rotateY(${tilt2}deg)`,
+                transformStyle: 'preserve-3d',
                 transformOrigin: 'center bottom',
-                filter: shadowFilter2,
+                filter: sf2,
               }}>
                 <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
               </div>
@@ -573,16 +576,17 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
         })()}
 
         {layout === 'single' && images.length >= 1 && (() => {
-          const tiltR = tiltDirection === 'right'
           const singleShadow = graphicShadow
-            ? `drop-shadow(${(tiltR ? -8 : 8) * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
+            ? `drop-shadow(${(tilt1 > 0 ? 10 : -10) * scale}px ${14 * scale}px ${36 * scale}px rgba(0,0,0,0.35))`
             : 'none'
           return (
-            <div style={{ perspective: `${600 * scale}px` }}>
+            <div style={{ perspective: `${500 * scale}px`, perspectiveOrigin: '50% 80%' }}>
               <div style={{
-                transform: `rotateY(${tiltR ? -15 : 15}deg) rotateX(-2deg)`,
+                transform: `rotateY(${tilt1}deg)`,
+                transformStyle: 'preserve-3d',
                 transformOrigin: 'center bottom',
                 filter: singleShadow,
+                marginBottom: offsetY1 * scale,
               }}>
                 <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
               </div>
@@ -617,10 +621,14 @@ export default function App() {
   const [graphicSubSize, setGraphicSubSize] = useState(14)
   const [asFont, setAsFont] = useState(FONT_OPTIONS[0])
   const [graphicPhonesGap, setGraphicPhonesGap] = useState(0)
-  const [graphicTiltDir, setGraphicTiltDir] = useState('right') // 'right' | 'left'
   const [graphicShadow, setGraphicShadow] = useState(true)
   const [graphicShowText, setGraphicShowText] = useState(true)
   const [graphicTransparentBg, setGraphicTransparentBg] = useState(false)
+  const [grTilt1, setGrTilt1] = useState(25)   // phone 1 rotateY
+  const [grTilt2, setGrTilt2] = useState(-15)  // phone 2 rotateY
+  const [grOffsetY1, setGrOffsetY1] = useState(0)  // phone 1 vertical offset
+  const [grOffsetY2, setGrOffsetY2] = useState(0)  // phone 2 vertical offset
+  const [asSubColor, setAsSubColor] = useState('')  // subtitle custom color
   const [images, setImages] = useState([])
   const [device, setDevice] = useState(DEVICES[0])
   const [bg, setBg] = useState(BACKGROUNDS[5])
@@ -810,10 +818,10 @@ export default function App() {
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="h-full flex flex-col items-center justify-center gap-4">
               {/* Hidden export target */}
               <div style={{ position: 'absolute', left: -99999, top: 0, opacity: 0, pointerEvents: 'none' }}>
-                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} tiltDirection={graphicTiltDir} graphicShadow={graphicShadow} showText={graphicShowText} />
+                <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} cardRef={graphicRef} scale={1} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} />
               </div>
               {/* Visible preview */}
-              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} tiltDirection={graphicTiltDir} graphicShadow={graphicShadow} showText={graphicShowText} />
+              <StoreGraphicCard images={images} device={device} bgColor={graphicTransparentBg ? 'transparent' : asBgColor} title={asTitle} subtitle={asSubtitle} shadow={shadow} frameColor={frameColor} textColor={asTextColor} layout={graphicLayout} orientation={graphicOrientation} titleSize={graphicTitleSize} subSize={graphicSubSize} scale={0.95} fontFamily={asFont.family} phonesGap={graphicPhonesGap} graphicShadow={graphicShadow} showText={graphicShowText} tilt1={grTilt1} tilt2={grTilt2} offsetY1={grOffsetY1} offsetY2={grOffsetY2} />
               <button onClick={async () => {
                 if (!graphicRef.current) return
                 try {
@@ -847,7 +855,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.8} />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} fontFamily={asFont.family} />
+                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} fontFamily={asFont.family} subTextColor={asSubColor} />
                       )}
                     </div>
                   </div>
@@ -870,7 +878,7 @@ export default function App() {
                         /* Render one hidden card per active format — each has correct aspect ratio */
                         STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
                           const fmtDevice = DEVICES.find(d => d.id === fmt.deviceId) || device
-                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} fontFamily={asFont.family} />
+                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} />
                         })
                       )}
                     </div>
@@ -884,7 +892,7 @@ export default function App() {
                       {tab === 'simple' ? (
                         <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} fontFamily={asFont.family} />
+                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} fontFamily={asFont.family} subTextColor={asSubColor} />
                       )}
                     </div>
 
@@ -1019,6 +1027,11 @@ export default function App() {
                     <input type="text" value={asTextColor || 'Auto'} onChange={e => setAsTextColor(e.target.value)} placeholder="Auto" className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
                     {asTextColor && <button onClick={() => setAsTextColor('')} className="text-[10px] text-gray-400 hover:text-gray-600 px-1">Auto</button>}
                   </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input type="color" value={asSubColor || (isLightColor(asBgColor) ? '#555555' : '#bbbbbb')} onChange={e => setAsSubColor(e.target.value)} className="w-9 h-9 rounded-lg border border-gray-200 cursor-pointer p-0.5" />
+                    <input type="text" value={asSubColor || 'Auto'} onChange={e => setAsSubColor(e.target.value)} placeholder="소제목 Auto" className="flex-1 text-[12px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+                    {asSubColor && <button onClick={() => setAsSubColor('')} className="text-[10px] text-gray-400 hover:text-gray-600 px-1">Auto</button>}
+                  </div>
                 </Section>
 
                 {/* Text mode toggle */}
@@ -1151,15 +1164,34 @@ export default function App() {
                   </div>
                 </Section>
 
-                <Section title="목업 설정" icon={Smartphone}>
+                <Section title="기기 1 (왼쪽)" icon={Smartphone}>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
-                    <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5 flex-1">
-                      <button onClick={() => setGraphicTiltDir('left')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${graphicTiltDir === 'left' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>← 왼쪽</button>
-                      <button onClick={() => setGraphicTiltDir('right')} className={`flex-1 py-1.5 text-[11px] font-bold rounded-md transition-all ${graphicTiltDir === 'right' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}>오른쪽 →</button>
-                    </div>
+                    <input type="range" min={-45} max={45} value={grTilt1} onChange={e => setGrTilt1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt1}°</span>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
+                    <input type="range" min={-60} max={60} value={grOffsetY1} onChange={e => setGrOffsetY1(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY1}px</span>
+                  </div>
+                </Section>
+
+                <Section title="기기 2 (오른쪽)" icon={Smartphone}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">기울기</span>
+                    <input type="range" min={-45} max={45} value={grTilt2} onChange={e => setGrTilt2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grTilt2}°</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-gray-400 w-12 shrink-0">상하</span>
+                    <input type="range" min={-60} max={60} value={grOffsetY2} onChange={e => setGrOffsetY2(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{grOffsetY2}px</span>
+                  </div>
+                </Section>
+
+                <Section title="목업 설정" icon={Layers}>
+                  <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-12 shrink-0">간격</span>
                     <input type="range" min={-60} max={60} value={graphicPhonesGap} onChange={e => setGraphicPhonesGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{graphicPhonesGap}px</span>
