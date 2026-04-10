@@ -387,6 +387,67 @@ function DeviceFrame({ src, device, shadow, scale = 1, frameColor }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   3D DEVICE WRAPPER — adds depth/thickness to DeviceFrame
+   ═══════════════════════════════════════════════════════════════ */
+function Device3D({ src, device, shadow, scale = 1, frameColor, depth = 8 }) {
+  const fc = frameColor || FRAME_COLORS[0]
+  const d = depth * scale
+  const w = device.frameWidth * scale
+  const r = device.frameRadius * scale
+  // Side color: darken the frame body color
+  const sideColor = fc.id === 'dark' ? '#1a1a1a' : fc.id === 'gold' ? '#9a8060' : fc.id === 'blue' ? '#4a6e85' : '#b0b0b8'
+  const sideDark = fc.id === 'dark' ? '#111' : fc.id === 'gold' ? '#806848' : fc.id === 'blue' ? '#3a5a70' : '#95959d'
+
+  return (
+    <div style={{ position: 'relative', transformStyle: 'preserve-3d', width: w }}>
+      {/* Front face — the actual device */}
+      <div style={{ transformStyle: 'preserve-3d', transform: `translateZ(${d / 2}px)` }}>
+        <DeviceFrame src={src} device={device} shadow={shadow} scale={scale} frameColor={frameColor} />
+      </div>
+      {/* Right edge */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0, width: d, height: '100%',
+        transform: `rotateY(90deg) translateZ(0px)`,
+        transformOrigin: 'right center',
+        background: `linear-gradient(180deg, ${sideColor} 0%, ${sideDark} 100%)`,
+        borderRadius: `0 ${Math.min(r * 0.15, 3)}px ${Math.min(r * 0.15, 3)}px 0`,
+      }} />
+      {/* Left edge */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: d, height: '100%',
+        transform: `rotateY(-90deg) translateZ(0px)`,
+        transformOrigin: 'left center',
+        background: `linear-gradient(180deg, ${sideColor} 0%, ${sideDark} 100%)`,
+        borderRadius: `${Math.min(r * 0.15, 3)}px 0 0 ${Math.min(r * 0.15, 3)}px`,
+      }} />
+      {/* Top edge */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', height: d,
+        transform: `rotateX(90deg) translateZ(0px)`,
+        transformOrigin: 'top center',
+        background: sideColor,
+        borderRadius: `${Math.min(r * 0.15, 3)}px ${Math.min(r * 0.15, 3)}px 0 0`,
+      }} />
+      {/* Bottom edge */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, width: '100%', height: d,
+        transform: `rotateX(-90deg) translateZ(0px)`,
+        transformOrigin: 'bottom center',
+        background: sideDark,
+        borderRadius: `0 0 ${Math.min(r * 0.15, 3)}px ${Math.min(r * 0.15, 3)}px`,
+      }} />
+      {/* Back face */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        transform: `translateZ(${-d / 2}px)`,
+        background: sideDark,
+        borderRadius: r,
+      }} />
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
    SIMPLE MOCKUP CARD  (Tab 1)
    ═══════════════════════════════════════════════════════════════ */
 function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor }) {
@@ -559,7 +620,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
                 transformOrigin: 'center bottom',
                 filter: sf1,
               }}>
-                <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+                <Device3D src={images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} depth={8} />
               </div>
               {/* Phone 2 */}
               <div style={{
@@ -572,7 +633,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
                 transformOrigin: 'center bottom',
                 filter: sf2,
               }}>
-                <DeviceFrame src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} />
+                <Device3D src={images[1]?.src || images[0]?.src} device={device} shadow="none" scale={phoneSc} frameColor={frameColor} depth={8} />
               </div>
             </div>
           )
@@ -590,7 +651,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
                 transformOrigin: 'center bottom',
                 filter: singleShadow,
               }}>
-                <DeviceFrame src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} />
+                <Device3D src={images[0]?.src} device={device} shadow="none" scale={phoneSc * 1.15} frameColor={frameColor} depth={8} />
               </div>
             </div>
           )
