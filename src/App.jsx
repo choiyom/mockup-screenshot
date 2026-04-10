@@ -506,10 +506,11 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
           display: 'flex', flexDirection: 'column',
           justifyContent: isLand ? 'center' : 'flex-end',
           alignItems: isLand ? 'flex-start' : 'center',
-          padding: isLand
-            ? `${(20 + textOffsetY) * scale}px ${(28 - textOffsetX) * scale}px ${(20 - textOffsetY) * scale}px ${(28 + textOffsetX) * scale}px`
-            : `${(16 + textOffsetY) * scale}px ${(20 + textOffsetX) * scale}px ${(8 - textOffsetY) * scale}px ${(20 - textOffsetX) * scale}px`,
+          padding: isLand ? `${20 * scale}px ${28 * scale}px` : `${16 * scale}px ${20 * scale}px ${8 * scale}px`,
           textAlign: isLand ? 'left' : 'center',
+          position: 'relative',
+          left: textOffsetX * scale,
+          top: textOffsetY * scale,
         }}>
           <h2 style={{
             fontSize: titleSize * scale, fontWeight: 800, color: textColor,
