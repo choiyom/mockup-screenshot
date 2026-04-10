@@ -194,15 +194,14 @@ const FRAME_COLORS = [
    ═══════════════════════════════════════════════════════════════ */
 const STORE_PRESETS = [
   { id: 'appstore', label: 'App Store', formats: [
-    { id: 'as-iphone-67', label: 'iPhone 6.7"', w: 1290, h: 2796, deviceId: 'iphone16-pro-max' },
-    { id: 'as-iphone-69', label: 'iPhone 6.9"', w: 1320, h: 2868, deviceId: 'iphone16-pro-max' },
-    { id: 'as-iphone-61', label: 'iPhone 6.1"', w: 1179, h: 2556, deviceId: 'iphone16' },
-    { id: 'as-ipad-13', label: 'iPad 13"', w: 2048, h: 2732, deviceId: 'ipad-pro-13' },
-    { id: 'as-ipad-11', label: 'iPad 11"', w: 1668, h: 2388, deviceId: 'ipad-pro-11' },
+    { id: 'as-ip-6.7', label: 'iPhone 6.7"', w: 1290, h: 2796, deviceId: 'iphone16-pro-max' },
+    { id: 'as-ip-6.5', label: 'iPhone 6.5"', w: 1242, h: 2688, deviceId: 'iphone16-pro-max' },
+    { id: 'as-ip-6.1', label: 'iPhone 6.1"', w: 1284, h: 2778, deviceId: 'iphone16' },
+    { id: 'as-ipad-12.9', label: 'iPad 12.9"', w: 2048, h: 2732, deviceId: 'ipad-pro-13' },
+    { id: 'as-ipad-13', label: 'iPad 13"', w: 2064, h: 2752, deviceId: 'ipad-pro-13' },
   ]},
   { id: 'playstore', label: 'Play Store', formats: [
     { id: 'ps-phone', label: 'Phone', w: 1080, h: 1920, deviceId: 'galaxy-s25-ultra' },
-    { id: 'ps-phone-hd', label: 'Phone QHD', w: 1440, h: 2560, deviceId: 'galaxy-s25-ultra' },
     { id: 'ps-tab-7', label: 'Tablet 7"', w: 1800, h: 2560, deviceId: 'android-tab-10' },
     { id: 'ps-tab-10', label: 'Tablet 10"', w: 1920, h: 2560, deviceId: 'android-tab-10' },
   ]},
@@ -504,7 +503,7 @@ export default function App() {
   const [asTextTop, setAsTextTop] = useState(22)
   const [asGap, setAsGap] = useState(0)
   const [textMode, setTextMode] = useState('global')   // 'global' | 'individual'
-  const [activeFormats, setActiveFormats] = useState(['as-iphone-67']) // checked format IDs
+  const [activeFormats, setActiveFormats] = useState(['as-ip-6.7']) // checked format IDs
   const [previewFormat, setPreviewFormat] = useState(null) // format to preview in detail
 
   const fileInputRef = useRef(null)
