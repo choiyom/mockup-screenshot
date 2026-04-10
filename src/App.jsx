@@ -548,7 +548,7 @@ function StoreGraphicCard({ images, device, bgColor, title, subtitle, shadow, ca
   const autoTextColor = isTransparentBg || isLightColor(bgColor) ? '#111' : '#fff'
   const textColor = customTextColor || autoTextColor
   const subColor = subTextColor || (isTransparentBg || isLightColor(bgColor) ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)')
-  const phoneSc = scale * (canvasH * 0.78) / (device.frameWidth * 2.2)
+  const phoneSc = scale * (canvasH * 0.95) / (device.frameWidth * 2.2)
   const isLand = orientation === 'landscape'
 
   return (
