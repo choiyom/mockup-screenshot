@@ -201,7 +201,9 @@ const STORE_PRESETS = [
     { id: 'as-ipad-13', label: 'iPad 13"', w: 2064, h: 2752, deviceId: 'ipad-pro-13' },
   ]},
   { id: 'playstore', label: 'Play Store', formats: [
-    { id: 'ps-phone', label: 'Phone', w: 1080, h: 1920, deviceId: 'galaxy-s25-ultra' },
+    { id: 'ps-phone-fhd', label: 'Phone FHD', w: 1080, h: 1920, deviceId: 'galaxy-s25-ultra' },
+    { id: 'ps-phone-qhd', label: 'Phone QHD', w: 1440, h: 2560, deviceId: 'galaxy-s25-ultra' },
+    { id: 'ps-phone-max', label: 'Phone Max', w: 2160, h: 3840, deviceId: 'galaxy-s25-ultra' },
     { id: 'ps-tab-7', label: 'Tablet 7"', w: 1800, h: 2560, deviceId: 'android-tab-10' },
     { id: 'ps-tab-10', label: 'Tablet 10"', w: 1920, h: 2560, deviceId: 'android-tab-10' },
   ]},
@@ -1039,7 +1041,7 @@ export default function App() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-gray-400 w-8 shrink-0">{t.gap}</span>
-                    <input type="range" min={0} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
+                    <input type="range" min={-30} max={40} value={asGap} onChange={e => setAsGap(Number(e.target.value))} className="flex-1 accent-gray-900 h-1" />
                     <span className="text-[10px] text-gray-500 font-mono w-8 text-right">{asGap}px</span>
                   </div>
                 </Section>
