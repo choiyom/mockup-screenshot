@@ -51,6 +51,27 @@ const T = {
     sponsored: 'Sponsored',
     adArea: 'Ad area',
     imgCount: (n) => `${n} image${n > 1 ? 's' : ''}`,
+    template: 'Template',
+    templateHint: 'Tap to apply a preset style',
+    textPresets: 'Text Presets',
+    perspective: '3D Perspective',
+    rotateX: 'Rotate X',
+    rotateY: 'Rotate Y',
+    rotateZ: 'Rotate Z',
+    customFont: 'Custom Font',
+    uploadFont: 'Upload Font (TTF/OTF)',
+    autoTranslate: 'Auto Translate',
+    translateTo: 'Translate to',
+    tryDemo: 'Try Demo',
+    tryDemoDesc: 'Load sample screenshots',
+    projects: 'Projects',
+    newProject: 'New Project',
+    saveProject: 'Save',
+    loadProject: 'Load',
+    exportInfo: 'Export Info',
+    checkedCount: (n) => `${n} selected`,
+    beforeAfter: 'Before / After',
+    beforeAfterDesc: 'Compare two screenshots',
   },
   ko: {
     dropTitle: '스크린샷을 드롭하세요',
@@ -92,6 +113,27 @@ const T = {
     sponsored: 'Sponsored',
     adArea: '광고 영역',
     imgCount: (n) => `${n}장`,
+    template: '템플릿',
+    templateHint: '클릭하면 프리셋 스타일이 적용됩니다',
+    textPresets: '텍스트 프리셋',
+    perspective: '3D 원근',
+    rotateX: 'X 회전',
+    rotateY: 'Y 회전',
+    rotateZ: 'Z 회전',
+    customFont: '커스텀 폰트',
+    uploadFont: '폰트 업로드 (TTF/OTF)',
+    autoTranslate: '자동 번역',
+    translateTo: '번역 대상',
+    tryDemo: '데모 체험',
+    tryDemoDesc: '샘플 스크린샷 불러오기',
+    projects: '프로젝트',
+    newProject: '새 프로젝트',
+    saveProject: '저장',
+    loadProject: '불러오기',
+    exportInfo: '내보내기 정보',
+    checkedCount: (n) => `${n}개 선택됨`,
+    beforeAfter: 'Before / After',
+    beforeAfterDesc: '두 스크린샷 비교',
   },
   zh: {
     dropTitle: '拖放截图到这里',
@@ -160,10 +202,12 @@ const DEVICES = [
 
 const BACKGROUNDS = [
   { id: 'transparent', label: 'Transparent', value: 'transparent', isTransparent: true },
+  // Solid colors
   { id: 'slate', label: 'Slate', value: '#1e293b' },
   { id: 'white', label: 'White', value: '#ffffff' },
   { id: 'zinc', label: 'Zinc', value: '#27272a' },
   { id: 'stone', label: 'Stone', value: '#f5f5f4' },
+  // Classic gradients
   { id: 'ocean', label: 'Ocean', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
   { id: 'sunset', label: 'Sunset', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
   { id: 'aurora', label: 'Aurora', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
@@ -171,7 +215,162 @@ const BACKGROUNDS = [
   { id: 'peach', label: 'Peach', value: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
   { id: 'night', label: 'Night', value: 'linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 50%, #2d1b69 100%)' },
   { id: 'candy', label: 'Candy', value: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' },
+  // Trendy brand-inspired gradients
+  { id: 'instagram', label: 'Insta', value: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)' },
+  { id: 'spotify', label: 'Spotify', value: 'linear-gradient(135deg, #1db954 0%, #191414 100%)' },
+  { id: 'cosmic', label: 'Cosmic', value: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+  { id: 'violet', label: 'Violet', value: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' },
+  { id: 'lime', label: 'Lime', value: 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)' },
+  { id: 'royal', label: 'Royal', value: 'linear-gradient(135deg, #4776e6 0%, #8e54e9 100%)' },
+  { id: 'flame', label: 'Flame', value: 'linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)' },
+  { id: 'forest', label: 'Forest', value: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)' },
+  // Mesh gradients (radial)
+  { id: 'mesh-pink', label: 'Mesh P', value: 'radial-gradient(at 27% 37%, #ff79c6 0, transparent 50%), radial-gradient(at 97% 21%, #bd93f9 0, transparent 50%), radial-gradient(at 52% 99%, #ffb86c 0, transparent 50%), radial-gradient(at 10% 29%, #ff5555 0, transparent 50%), #282a36' },
+  { id: 'mesh-blue', label: 'Mesh B', value: 'radial-gradient(at 40% 20%, #8ec5fc 0, transparent 50%), radial-gradient(at 80% 0%, #e0c3fc 0, transparent 50%), radial-gradient(at 0% 50%, #96e6a1 0, transparent 50%), #667eea' },
+  { id: 'mesh-dark', label: 'Mesh D', value: 'radial-gradient(at 0% 0%, #6366f1 0, transparent 50%), radial-gradient(at 100% 0%, #ec4899 0, transparent 50%), radial-gradient(at 50% 100%, #8b5cf6 0, transparent 50%), #0f172a' },
+  // Pastel
+  { id: 'pastel-pink', label: 'Pink', value: 'linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%)' },
+  { id: 'pastel-sky', label: 'Sky', value: 'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)' },
+  { id: 'pastel-sand', label: 'Sand', value: 'linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)' },
 ]
+
+/* ═══════════════════════════════════════════════════════════════
+   TEMPLATES — preset layouts for quick start
+   ═══════════════════════════════════════════════════════════════ */
+const TEMPLATES = [
+  { id: 'tmpl-clean', label: '✨ Clean', desc: 'Simple white', bgId: 'white', shadowId: 'medium', asBgColor: '#ffffff', asTitleSize: 20, asSubSize: 12, asTextTop: 18, asGap: 8 },
+  { id: 'tmpl-brand', label: '💜 Brand', desc: 'Purple violet', bgId: 'ocean', shadowId: 'high', asBgColor: '#6d28d9', asTextColor: '#ffffff', asSubColor: '#e9d5ff', asTitleSize: 22, asSubSize: 13, asTextTop: 20 },
+  { id: 'tmpl-feature', label: '⭐ Feature', desc: 'Bold gradient', bgId: 'sunset', shadowId: 'high', asBgColor: '#f5576c', asTextColor: '#ffffff', asSubColor: '#ffe4e1', asTitleSize: 24, asSubSize: 13, asTextTop: 16 },
+  { id: 'tmpl-dark', label: '🌙 Dark', desc: 'Night mode', bgId: 'night', shadowId: 'high', asBgColor: '#0f172a', asTextColor: '#ffffff', asSubColor: '#94a3b8', asTitleSize: 22, asSubSize: 12, asTextTop: 20 },
+  { id: 'tmpl-mint', label: '🌿 Mint', desc: 'Fresh green', bgId: 'mint', shadowId: 'medium', asBgColor: '#43e97b', asTextColor: '#064e3b', asSubColor: '#065f46', asTitleSize: 22, asSubSize: 13, asTextTop: 18 },
+  { id: 'tmpl-peach', label: '🍑 Peach', desc: 'Warm soft', bgId: 'peach', shadowId: 'soft', asBgColor: '#fcb69f', asTextColor: '#7c2d12', asSubColor: '#9a3412', asTitleSize: 20, asSubSize: 12, asTextTop: 20 },
+  { id: 'tmpl-cosmic', label: '🌌 Cosmic', desc: 'Orange pink', bgId: 'cosmic', shadowId: 'high', asBgColor: '#fa709a', asTextColor: '#ffffff', asSubColor: '#fff7ed', asTitleSize: 24, asSubSize: 13, asTextTop: 18 },
+  { id: 'tmpl-royal', label: '👑 Royal', desc: 'Blue purple', bgId: 'royal', shadowId: 'high', asBgColor: '#6366f1', asTextColor: '#ffffff', asSubColor: '#c7d2fe', asTitleSize: 22, asSubSize: 13, asTextTop: 20 },
+  { id: 'tmpl-mesh', label: '🎨 Mesh', desc: 'Artistic', bgId: 'mesh-pink', shadowId: 'high', asBgColor: '#282a36', asTextColor: '#ffffff', asSubColor: '#f8f8f2', asTitleSize: 22, asSubSize: 12, asTextTop: 18 },
+  { id: 'tmpl-minimal', label: '⚪ Minimal', desc: 'Clean gray', bgId: 'stone', shadowId: 'soft', asBgColor: '#f5f5f4', asTextColor: '#1c1917', asSubColor: '#57534e', asTitleSize: 18, asSubSize: 11, asTextTop: 20, asGap: 4 },
+]
+
+/* ═══════════════════════════════════════════════════════════════
+   TEXT PRESETS — headline + subtitle combos for quick fill
+   ═══════════════════════════════════════════════════════════════ */
+const TEXT_PRESETS = {
+  en: [
+    { title: 'Track everything you need', sub: 'Simple. Fast. Beautiful.' },
+    { title: 'Your daily companion', sub: 'Manage tasks effortlessly' },
+    { title: 'Made for creators', sub: 'Craft with confidence' },
+    { title: 'Designed for focus', sub: 'Everything in one place' },
+    { title: 'Get started in seconds', sub: 'No setup required' },
+    { title: 'Boost your productivity', sub: 'Work smarter, not harder' },
+    { title: 'Beautiful & intuitive', sub: 'Love at first tap' },
+    { title: 'Trusted by millions', sub: 'Join our community' },
+  ],
+  ko: [
+    { title: '필요한 모든 것을 한 번에', sub: '간편하고 빠르게 시작하세요' },
+    { title: '당신의 하루를 바꾸는 앱', sub: '작업을 손쉽게 관리하세요' },
+    { title: '창작자를 위해 만들었습니다', sub: '자신있게 만들어가세요' },
+    { title: '집중을 위한 설계', sub: '모든 것을 한 곳에서' },
+    { title: '몇 초 만에 시작하기', sub: '설정이 필요 없습니다' },
+    { title: '생산성을 높여보세요', sub: '더 스마트하게 일하세요' },
+    { title: '아름답고 직관적인', sub: '한 번 쓰면 빠져드는' },
+    { title: '수백만이 선택한 앱', sub: '지금 함께하세요' },
+  ],
+  zh: [
+    { title: '一站式管理', sub: '简单・快速・精美' },
+    { title: '您的日常伙伴', sub: '轻松管理任务' },
+    { title: '为创作者打造', sub: '自信地创造' },
+    { title: '专注设计', sub: '一切尽在掌握' },
+    { title: '几秒即可开始', sub: '无需设置' },
+    { title: '提升效率', sub: '聪明工作' },
+    { title: '美观直观', sub: '一见倾心' },
+    { title: '千万用户之选', sub: '加入我们' },
+  ],
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHRASE TRANSLATIONS — quick dictionary for auto-translate
+   ═══════════════════════════════════════════════════════════════ */
+const PHRASE_DICT = {
+  // ko -> other
+  '필요한 모든 것을 한 번에': { en: 'Everything you need, in one place', zh: '一站式管理', ja: '必要なものすべてを一括で' },
+  '간편하고 빠르게 시작하세요': { en: 'Simple and fast to start', zh: '简单快速开始', ja: 'シンプルで素早くスタート' },
+  '당신의 하루를 바꾸는 앱': { en: 'The app that changes your day', zh: '改变你一天的应用', ja: 'あなたの一日を変えるアプリ' },
+  '창작자를 위해 만들었습니다': { en: 'Made for creators', zh: '为创作者打造', ja: 'クリエイターのために作られました' },
+  '집중을 위한 설계': { en: 'Designed for focus', zh: '专注设计', ja: '集中のための設計' },
+  '생산성을 높여보세요': { en: 'Boost your productivity', zh: '提升您的效率', ja: '生産性を向上させよう' },
+  '몇 초 만에 시작하기': { en: 'Get started in seconds', zh: '几秒即可开始', ja: '数秒で開始' },
+  '아름답고 직관적인': { en: 'Beautiful & intuitive', zh: '美观直观', ja: '美しく直感的' },
+  '수백만이 선택한 앱': { en: 'Trusted by millions', zh: '千万用户之选', ja: '何百万人にも選ばれたアプリ' },
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORMAT BADGES — indicate required vs optional
+   ═══════════════════════════════════════════════════════════════ */
+const FORMAT_BADGES = {
+  'as-ip-6.7': { type: 'required', label: 'Required' },
+  'as-ip-6.5': { type: 'required', label: 'Required' },
+  'as-ipad-13': { type: 'required', label: 'Required' },
+  'ps-phone-fhd': { type: 'required', label: 'Required' },
+  'ps-tab-10': { type: 'required', label: 'Required' },
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DEMO SAMPLES — placeholder SVG screenshots for "Try Demo"
+   ═══════════════════════════════════════════════════════════════ */
+const makeDemoSvg = (bg, fg, title, icon) => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844' width='390' height='844'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>
+        <stop offset='0%' stop-color='${bg}'/>
+        <stop offset='100%' stop-color='${fg}'/>
+      </linearGradient>
+    </defs>
+    <rect width='390' height='844' fill='url(#g)'/>
+    <text x='195' y='80' text-anchor='middle' font-family='system-ui,sans-serif' font-size='48' fill='white' opacity='0.95'>${icon}</text>
+    <text x='195' y='150' text-anchor='middle' font-family='system-ui,sans-serif' font-size='22' font-weight='700' fill='white'>${title}</text>
+    <rect x='40' y='220' width='310' height='80' rx='16' fill='white' opacity='0.15'/>
+    <rect x='40' y='320' width='310' height='80' rx='16' fill='white' opacity='0.15'/>
+    <rect x='40' y='420' width='310' height='80' rx='16' fill='white' opacity='0.15'/>
+    <rect x='40' y='520' width='310' height='80' rx='16' fill='white' opacity='0.15'/>
+    <circle cx='70' cy='260' r='22' fill='white' opacity='0.35'/>
+    <circle cx='70' cy='360' r='22' fill='white' opacity='0.35'/>
+    <circle cx='70' cy='460' r='22' fill='white' opacity='0.35'/>
+    <circle cx='70' cy='560' r='22' fill='white' opacity='0.35'/>
+    <rect x='110' y='245' width='160' height='12' rx='6' fill='white' opacity='0.55'/>
+    <rect x='110' y='267' width='100' height='10' rx='5' fill='white' opacity='0.35'/>
+    <rect x='110' y='345' width='180' height='12' rx='6' fill='white' opacity='0.55'/>
+    <rect x='110' y='367' width='120' height='10' rx='5' fill='white' opacity='0.35'/>
+    <rect x='110' y='445' width='140' height='12' rx='6' fill='white' opacity='0.55'/>
+    <rect x='110' y='467' width='90' height='10' rx='5' fill='white' opacity='0.35'/>
+    <rect x='110' y='545' width='170' height='12' rx='6' fill='white' opacity='0.55'/>
+    <rect x='110' y='567' width='110' height='10' rx='5' fill='white' opacity='0.35'/>
+    <rect x='120' y='720' width='150' height='56' rx='28' fill='white' opacity='0.9'/>
+    <text x='195' y='755' text-anchor='middle' font-family='system-ui,sans-serif' font-size='16' font-weight='700' fill='${bg}'>Get Started</text>
+  </svg>`
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
+}
+const DEMO_SAMPLES = [
+  { id: 'demo-1', name: 'Home', src: makeDemoSvg('#667eea', '#764ba2', 'Welcome', '✨') },
+  { id: 'demo-2', name: 'Features', src: makeDemoSvg('#f093fb', '#f5576c', 'Features', '⭐') },
+  { id: 'demo-3', name: 'Stats', src: makeDemoSvg('#43e97b', '#38f9d7', 'Statistics', '📊') },
+  { id: 'demo-4', name: 'Profile', src: makeDemoSvg('#4facfe', '#00f2fe', 'Profile', '👤') },
+]
+
+/* ═══════════════════════════════════════════════════════════════
+   TRANSLATE HELPER — uses dictionary, falls back to original
+   ═══════════════════════════════════════════════════════════════ */
+function translatePhrase(text, targetLang) {
+  if (!text) return text
+  // Exact match
+  if (PHRASE_DICT[text] && PHRASE_DICT[text][targetLang]) return PHRASE_DICT[text][targetLang]
+  // Reverse lookup (if text is in a non-ko language, find ko key)
+  for (const [ko, others] of Object.entries(PHRASE_DICT)) {
+    if (Object.values(others).includes(text)) {
+      if (targetLang === 'ko') return ko
+      return others[targetLang] || text
+    }
+  }
+  return text // fallback: return original
+}
 
 const SHADOWS = [
   { id: 'none', label: 'None', value: 'none' },
@@ -667,7 +866,18 @@ export default function App() {
   const [previewFormat, setPreviewFormat] = useState(null) // format to preview in detail
 
   const [draftSaved, setDraftSaved] = useState(false)
+  // Custom font
+  const [customFont, setCustomFont] = useState(null) // { name, family }
+  // Projects
+  const [projects, setProjects] = useState([])
+  const [currentProjectId, setCurrentProjectId] = useState(null)
+  const [showProjects, setShowProjects] = useState(false)
+  // Before/After layout toggle
+  const [beforeAfterMode, setBeforeAfterMode] = useState(false)
+  // Export info expanded
+  const [showExportInfo, setShowExportInfo] = useState(false)
   const fileInputRef = useRef(null)
+  const fontInputRef = useRef(null)
   const cardRefs = useRef({})
   const graphicRef = useRef(null)
   const saveTimerRef = useRef(null)
@@ -744,6 +954,132 @@ export default function App() {
       graphicOrientation, graphicTitleSize, graphicSubSize,
       graphicShadow, graphicShowText, graphicTransparentBg,
       grTextOffsetX, grTextOffsetY, grSlots, images])
+
+  /* ── Template apply ─────────────────────────────────────────── */
+  const applyTemplate = useCallback((tmpl) => {
+    if (tmpl.bgId) { const b = BACKGROUNDS.find(x => x.id === tmpl.bgId); if (b) setBg(b) }
+    if (tmpl.shadowId) { const s = SHADOWS.find(x => x.id === tmpl.shadowId); if (s) setShadow(s) }
+    if (tmpl.asBgColor) setAsBgColor(tmpl.asBgColor)
+    if (tmpl.asTextColor !== undefined) setAsTextColor(tmpl.asTextColor)
+    if (tmpl.asSubColor !== undefined) setAsSubColor(tmpl.asSubColor)
+    if (tmpl.asTitleSize) setAsTitleSize(tmpl.asTitleSize)
+    if (tmpl.asSubSize) setAsSubSize(tmpl.asSubSize)
+    if (tmpl.asTextTop) setAsTextTop(tmpl.asTextTop)
+    if (tmpl.asGap != null) setAsGap(tmpl.asGap)
+  }, [])
+
+  /* ── Text preset apply ──────────────────────────────────────── */
+  const applyTextPreset = useCallback((preset) => {
+    setAsTitle(preset.title)
+    setAsSubtitle(preset.sub)
+  }, [])
+
+  /* ── Demo samples ──────────────────────────────────────────── */
+  const loadDemoSamples = useCallback(() => {
+    setImages(DEMO_SAMPLES.map(d => ({
+      id: `${d.id}-${Date.now()}`,
+      src: d.src,
+      name: d.name,
+      title: '',
+      subtitle: '',
+    })))
+  }, [])
+
+  /* ── Custom font upload ────────────────────────────────────── */
+  const handleFontUpload = useCallback((e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const fontData = ev.target.result
+      const fontName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_')
+      const fontFamily = `Custom_${fontName}`
+      const fontFace = new FontFace(fontFamily, `url(${fontData})`)
+      fontFace.load().then(loaded => {
+        document.fonts.add(loaded)
+        const custom = { id: 'custom', label: file.name.replace(/\.[^.]+$/, '').slice(0, 10), family: fontFamily, isCustom: true }
+        setCustomFont(custom)
+        setAsFont(custom)
+      }).catch(err => {
+        console.error('Font load failed:', err)
+        alert('폰트 로딩 실패: ' + err.message)
+      })
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }, [])
+
+  /* ── Translate current text ────────────────────────────────── */
+  const translateTexts = useCallback((targetLang) => {
+    if (asTitle) setAsTitle(translatePhrase(asTitle, targetLang))
+    if (asSubtitle) setAsSubtitle(translatePhrase(asSubtitle, targetLang))
+    // per-image (individual mode)
+    setImages(prev => prev.map(img => ({
+      ...img,
+      title: img.title ? translatePhrase(img.title, targetLang) : img.title,
+      subtitle: img.subtitle ? translatePhrase(img.subtitle, targetLang) : img.subtitle,
+    })))
+  }, [asTitle, asSubtitle])
+
+  /* ── Projects ──────────────────────────────────────────────── */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mockup-app-projects')
+      if (raw) setProjects(JSON.parse(raw))
+    } catch {}
+  }, [])
+
+  const saveCurrentAsProject = useCallback(() => {
+    const name = prompt('프로젝트 이름을 입력하세요:', `Project ${projects.length + 1}`)
+    if (!name) return
+    const project = {
+      id: `proj-${Date.now()}`,
+      name,
+      savedAt: new Date().toISOString(),
+      state: {
+        tab, lang, deviceId: device.id, bgId: bg.id, padding, shadowId: shadow.id,
+        frameColorId: frameColor.id, fontId: asFont.id,
+        asBgColor, asTextColor, asSubColor, asTitle, asSubtitle,
+        asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats,
+      },
+      images: images.slice(0, 20),
+      thumb: images[0]?.src || null,
+    }
+    const next = [...projects.filter(p => p.id !== project.id), project].slice(-10) // keep last 10
+    setProjects(next)
+    setCurrentProjectId(project.id)
+    localStorage.setItem('mockup-app-projects', JSON.stringify(next))
+  }, [projects, tab, lang, device, bg, padding, shadow, frameColor, asFont, asBgColor, asTextColor, asSubColor, asTitle, asSubtitle, asTitleSize, asSubSize, asTextTop, asGap, textMode, activeFormats, images])
+
+  const loadProject = useCallback((project) => {
+    const s = project.state
+    if (s.tab) setTab(s.tab)
+    if (s.deviceId) { const d = DEVICES.find(x => x.id === s.deviceId); if (d) setDevice(d) }
+    if (s.bgId) { const b = BACKGROUNDS.find(x => x.id === s.bgId); if (b) setBg(b) }
+    if (s.padding != null) setPadding(s.padding)
+    if (s.shadowId) { const sh = SHADOWS.find(x => x.id === s.shadowId); if (sh) setShadow(sh) }
+    if (s.frameColorId) { const fc = FRAME_COLORS.find(x => x.id === s.frameColorId); if (fc) setFrameColor(fc) }
+    if (s.asBgColor) setAsBgColor(s.asBgColor)
+    if (s.asTextColor !== undefined) setAsTextColor(s.asTextColor)
+    if (s.asSubColor !== undefined) setAsSubColor(s.asSubColor)
+    if (s.asTitle) setAsTitle(s.asTitle)
+    if (s.asSubtitle) setAsSubtitle(s.asSubtitle)
+    if (s.asTitleSize != null) setAsTitleSize(s.asTitleSize)
+    if (s.asSubSize != null) setAsSubSize(s.asSubSize)
+    if (s.asTextTop != null) setAsTextTop(s.asTextTop)
+    if (s.asGap != null) setAsGap(s.asGap)
+    if (s.textMode) setTextMode(s.textMode)
+    if (s.activeFormats) setActiveFormats(s.activeFormats)
+    if (project.images?.length) setImages(project.images)
+    setCurrentProjectId(project.id)
+    setShowProjects(false)
+  }, [])
+
+  const deleteProject = useCallback((id) => {
+    const next = projects.filter(p => p.id !== id)
+    setProjects(next)
+    localStorage.setItem('mockup-app-projects', JSON.stringify(next))
+  }, [projects])
 
   /* ── File handling ─────────────────────────────────────────── */
   const handleFiles = useCallback((files) => {
@@ -885,6 +1221,12 @@ export default function App() {
         </div>
         <div className="flex items-center gap-2">
           {draftSaved && <span className="text-[10px] text-emerald-500 font-medium animate-pulse">Saved</span>}
+          <button onClick={() => setShowProjects(true)} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors font-semibold" title="Projects">
+            📁 {t.projects}{projects.length > 0 && <span className="ml-1 text-[9px] bg-violet-100 text-violet-600 px-1.5 rounded-full">{projects.length}</span>}
+          </button>
+          <button onClick={saveCurrentAsProject} disabled={images.length === 0} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-40" title="Save as project">
+            💾 {t.saveProject}
+          </button>
           <button onClick={() => { localStorage.removeItem('mockup-app-draft'); window.location.reload() }} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Reset all settings">
             Reset
           </button>
@@ -908,15 +1250,27 @@ export default function App() {
         <main className="flex-1 min-h-0 overflow-auto p-4 lg:p-6">
           {images.length === 0 ? (
             <div className="h-full flex items-center justify-center">
-              <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} onClick={() => fileInputRef.current?.click()}
-                className={`w-full max-w-2xl aspect-[16/9] rounded-2xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center gap-4 transition-all ${isDragging ? 'border-violet-500 bg-violet-50 scale-[1.01]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80'}`}>
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${isDragging ? 'bg-violet-100' : 'bg-gray-100'}`}>
-                  <Upload className={`w-7 h-7 ${isDragging ? 'text-violet-600' : 'text-gray-300'}`} />
+              <div className="w-full max-w-2xl flex flex-col gap-3">
+                <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} onClick={() => fileInputRef.current?.click()}
+                  className={`w-full aspect-[16/9] rounded-2xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center gap-4 transition-all ${isDragging ? 'border-violet-500 bg-violet-50 scale-[1.01]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/80'}`}>
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${isDragging ? 'bg-violet-100' : 'bg-gray-100'}`}>
+                    <Upload className={`w-7 h-7 ${isDragging ? 'text-violet-600' : 'text-gray-300'}`} />
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-[14px] font-semibold ${isDragging ? 'text-violet-700' : 'text-gray-500'}`}>{t.dropTitle}</p>
+                    <p className="text-[12px] text-gray-400 mt-1">{t.dropSub}</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className={`text-[14px] font-semibold ${isDragging ? 'text-violet-700' : 'text-gray-500'}`}>{t.dropTitle}</p>
-                  <p className="text-[12px] text-gray-400 mt-1">{t.dropSub}</p>
+                <div className="flex items-center gap-3 justify-center">
+                  <div className="h-px flex-1 bg-gray-200" />
+                  <span className="text-[11px] text-gray-400 font-medium">OR</span>
+                  <div className="h-px flex-1 bg-gray-200" />
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); loadDemoSamples() }}
+                  className="w-full py-3 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white rounded-2xl font-semibold text-[13px] shadow-sm transition-all flex items-center justify-center gap-2">
+                  ✨ {t.tryDemo} — <span className="opacity-80 font-normal">{t.tryDemoDesc}</span>
+                </button>
               </div>
             </div>
           ) : tab === 'graphic' ? (
@@ -984,6 +1338,24 @@ export default function App() {
                   </div>
                 )
               })()}
+
+              {/* ── Before/After Preview (Simple tab only) ─── */}
+              {tab === 'simple' && beforeAfterMode && images.length >= 2 && (
+                <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 shadow-sm">
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider self-start">Before / After</p>
+                  <div className="flex items-center justify-center gap-4 flex-wrap">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-gray-400">BEFORE</span>
+                      <SimpleMockupCard src={images[0].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.6} />
+                    </div>
+                    <div className="text-[24px] text-gray-300">→</div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-violet-500">AFTER</span>
+                      <SimpleMockupCard src={images[1].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.6} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ── Thumbnail Grid ───────────────────────────── */}
               <div className="grid gap-5" style={{
@@ -1082,6 +1454,19 @@ export default function App() {
             {/* ── TAB 1: Simple ─────────────────────────────── */}
             {tab === 'simple' && (
               <>
+                <Section title={t.template} icon={Layers}>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {TEMPLATES.slice(0, 6).map(tmpl => (
+                      <button key={tmpl.id} onClick={() => applyTemplate(tmpl)}
+                        className="px-2 py-2 rounded-lg text-[11px] font-semibold bg-gray-50 text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-all text-left">
+                        <div>{tmpl.label}</div>
+                        <div className="text-[9px] text-gray-400 font-normal truncate">{tmpl.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1.5">{t.templateHint}</p>
+                </Section>
+
                 <Section title={t.background} icon={Sun}>
                   <div className="grid grid-cols-4 gap-2">
                     {BACKGROUNDS.map(b => {
@@ -1103,28 +1488,65 @@ export default function App() {
                     <span className="text-[11px] text-gray-500 font-mono w-10 text-right">{padding}px</span>
                   </div>
                 </Section>
+
+                <Section title={t.beforeAfter} icon={Layers}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-500">{t.beforeAfterDesc}</span>
+                    <button onClick={() => setBeforeAfterMode(!beforeAfterMode)} className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${beforeAfterMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'}`}>{beforeAfterMode ? 'ON' : 'OFF'}</button>
+                  </div>
+                  {beforeAfterMode && <p className="text-[10px] text-gray-400 mt-1.5">{lang === 'ko' ? '이미지 2장을 좌우로 나란히 표시합니다' : lang === 'zh' ? '并排显示两张截图' : 'First 2 images shown side by side'}</p>}
+                </Section>
               </>
             )}
 
             {/* ── TAB 2: App Store ──────────────────────────── */}
             {tab === 'appstore' && (
               <>
-                {/* Store format presets */}
+                {/* Template library */}
+                <Section title={t.template} icon={Layers}>
+                  <div className="grid grid-cols-2 gap-1.5 max-h-[220px] overflow-y-auto">
+                    {TEMPLATES.map(tmpl => (
+                      <button key={tmpl.id} onClick={() => applyTemplate(tmpl)}
+                        className="px-2 py-2 rounded-lg text-[11px] font-semibold bg-gray-50 text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-all text-left">
+                        <div className="truncate">{tmpl.label}</div>
+                        <div className="text-[9px] text-gray-400 font-normal truncate">{tmpl.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1.5">{t.templateHint}</p>
+                </Section>
+
+                {/* Store format presets with badges & counter */}
                 <Section title={t.storeSize} icon={PackageCheck}>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] text-gray-400">{t.checkedCount(activeFormats.length)}</p>
+                    <button
+                      onClick={() => {
+                        const required = Object.keys(FORMAT_BADGES)
+                        setActiveFormats(prev => Array.from(new Set([...prev, ...required])))
+                      }}
+                      className="text-[10px] font-semibold text-violet-600 hover:text-violet-800">
+                      ★ {lang === 'ko' ? '필수만' : lang === 'zh' ? '必需' : 'Required'}
+                    </button>
+                  </div>
                   {STORE_PRESETS.map(store => (
                     <div key={store.id} className="mb-3">
                       <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider mb-1.5">{store.label}</p>
                       <div className="flex flex-col gap-1">
-                        {store.formats.map(fmt => (
-                          <label key={fmt.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer text-[11px]">
-                            <input type="checkbox" checked={activeFormats.includes(fmt.id)} onChange={e => {
-                              if (e.target.checked) setActiveFormats(prev => [...prev, fmt.id])
-                              else setActiveFormats(prev => prev.filter(x => x !== fmt.id))
-                            }} className="accent-violet-600 w-3.5 h-3.5" />
-                            <span className="font-semibold text-gray-700 flex-1">{fmt.label}</span>
-                            <span className="text-[9px] text-gray-400 font-mono">{fmt.w}×{fmt.h}</span>
-                          </label>
-                        ))}
+                        {store.formats.map(fmt => {
+                          const badge = FORMAT_BADGES[fmt.id]
+                          return (
+                            <label key={fmt.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 cursor-pointer text-[11px]">
+                              <input type="checkbox" checked={activeFormats.includes(fmt.id)} onChange={e => {
+                                if (e.target.checked) setActiveFormats(prev => [...prev, fmt.id])
+                                else setActiveFormats(prev => prev.filter(x => x !== fmt.id))
+                              }} className="accent-violet-600 w-3.5 h-3.5" />
+                              <span className="font-semibold text-gray-700 flex-1">{fmt.label.replace(/ ★$/, '')}</span>
+                              {badge && <span className="text-[8px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">★</span>}
+                              <span className="text-[9px] text-gray-400 font-mono">{fmt.w}×{fmt.h}</span>
+                            </label>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}
@@ -1187,13 +1609,47 @@ export default function App() {
                   )}
                 </Section>
 
+                {/* Text preset library */}
+                <Section title={t.textPresets} icon={Type}>
+                  <div className="flex flex-col gap-1 max-h-[200px] overflow-y-auto">
+                    {(TEXT_PRESETS[lang] || TEXT_PRESETS.en).map((preset, idx) => (
+                      <button key={idx} onClick={() => applyTextPreset(preset)}
+                        className="px-2.5 py-2 rounded-lg text-left bg-gray-50 hover:bg-violet-50 transition-all">
+                        <div className="text-[11px] font-bold text-gray-700 truncate">{preset.title}</div>
+                        <div className="text-[10px] text-gray-400 truncate">{preset.sub}</div>
+                      </button>
+                    ))}
+                  </div>
+                </Section>
+
+                {/* Auto-translate */}
+                <Section title={t.autoTranslate} icon={Globe}>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[['en','EN'],['ko','KR'],['zh','中'],['ja','日']].map(([code, label]) => (
+                      <button key={code} onClick={() => translateTexts(code)}
+                        className="py-1.5 text-[10px] font-bold rounded-lg bg-gray-50 text-gray-600 hover:bg-violet-100 hover:text-violet-700 transition-all">
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1.5">{t.translateTo}</p>
+                </Section>
+
                 {/* Text size — always global (layout) */}
                 <Section title="폰트" icon={Type}>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 mb-2">
                     {FONT_OPTIONS.map(f => (
                       <button key={f.id} onClick={() => setAsFont(f)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${asFont.id === f.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`} style={{ fontFamily: f.family }}>{f.label}</button>
                     ))}
+                    {customFont && (
+                      <button onClick={() => setAsFont(customFont)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${asFont.id === customFont.id ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100'}`} style={{ fontFamily: customFont.family }} title={customFont.label}>{customFont.label}</button>
+                    )}
                   </div>
+                  <button onClick={() => fontInputRef.current?.click()}
+                    className="w-full py-1.5 text-[10px] font-semibold rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 border border-dashed border-gray-300">
+                    + {t.uploadFont}
+                  </button>
+                  <input ref={fontInputRef} type="file" accept=".ttf,.otf,.woff,.woff2" className="hidden" onChange={handleFontUpload} />
                 </Section>
 
                 <Section title={t.textSize} icon={Type}>
@@ -1365,6 +1821,47 @@ export default function App() {
       </div>
 
       {/* Google AdSense auto ads handle placement automatically */}
+
+      {/* ── Projects modal ────────────────────────────────────── */}
+      {showProjects && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowProjects(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-[16px] font-bold text-gray-900">📁 {t.projects}</h2>
+              <button onClick={() => setShowProjects(false)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-4 h-4 text-gray-500" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {projects.length === 0 ? (
+                <div className="text-center py-12 text-gray-400 text-[13px]">
+                  <p>저장된 프로젝트가 없습니다.</p>
+                  <p className="text-[11px] mt-1">💾 Save 버튼으로 현재 작업을 저장하세요.</p>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {projects.slice().reverse().map(p => (
+                    <div key={p.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${currentProjectId === p.id ? 'border-violet-400 bg-violet-50' : 'border-gray-100 hover:border-gray-300 bg-white'}`}>
+                      {p.thumb ? (
+                        <img src={p.thumb} alt="" className="w-14 h-14 rounded-lg object-cover bg-gray-100 shrink-0" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center text-gray-300">📷</div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-gray-800 truncate">{p.name}</p>
+                        <p className="text-[10px] text-gray-400">{new Date(p.savedAt).toLocaleString()}</p>
+                        <p className="text-[10px] text-gray-400">{p.images?.length || 0}장 · {p.state?.tab}</p>
+                      </div>
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <button onClick={() => loadProject(p)} className="px-3 py-1 bg-violet-600 text-white text-[11px] font-semibold rounded-lg hover:bg-violet-700">{t.loadProject}</button>
+                        <button onClick={() => { if (confirm('삭제할까요?')) deleteProject(p.id) }} className="px-3 py-1 text-gray-400 hover:text-red-500 text-[11px]">삭제</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Export overlay ────────────────────────────────────── */}
       {exporting && (
