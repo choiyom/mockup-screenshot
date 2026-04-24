@@ -182,17 +182,19 @@ const T = {
    DEVICES
    ═══════════════════════════════════════════════════════════════ */
 const DEVICES = [
-  { id: 'iphone16-pro-max', name: 'iPhone 16 Pro Max', icon: Smartphone, screenW: 440, screenH: 956, frameWidth: 290, frameRadius: 44, bezel: 8, type: 'iphone' },
-  { id: 'iphone16-pro', name: 'iPhone 16 Pro', icon: Smartphone, screenW: 402, screenH: 874, frameWidth: 280, frameRadius: 42, bezel: 8, type: 'iphone' },
-  { id: 'iphone16', name: 'iPhone 16', icon: Smartphone, screenW: 393, screenH: 852, frameWidth: 272, frameRadius: 42, bezel: 8, type: 'iphone' },
-  { id: 'galaxy-s25-ultra', name: 'Galaxy S25 Ultra', icon: Smartphone, screenW: 412, screenH: 892, frameWidth: 258, frameRadius: 36, bezel: 7, type: 'samsung' },
-  { id: 'galaxy-s25-plus', name: 'Galaxy S25+', icon: Smartphone, screenW: 412, screenH: 883, frameWidth: 252, frameRadius: 34, bezel: 7, type: 'samsung' },
-  { id: 'galaxy-s25', name: 'Galaxy S25', icon: Smartphone, screenW: 360, screenH: 780, frameWidth: 242, frameRadius: 32, bezel: 7, type: 'samsung' },
+  // iPhones with Dynamic Island — statusBarH/islandW/islandH/islandTop in screen pt
+  { id: 'iphone16-pro-max', name: 'iPhone 16 Pro Max', icon: Smartphone, screenW: 440, screenH: 956, frameWidth: 290, frameRadius: 44, bezel: 8, type: 'iphone', statusBarH: 54, hasIsland: true, islandW: 125, islandH: 37, islandTop: 11 },
+  { id: 'iphone16-pro', name: 'iPhone 16 Pro', icon: Smartphone, screenW: 402, screenH: 874, frameWidth: 280, frameRadius: 42, bezel: 8, type: 'iphone', statusBarH: 54, hasIsland: true, islandW: 125, islandH: 37, islandTop: 11 },
+  { id: 'iphone16', name: 'iPhone 16', icon: Smartphone, screenW: 393, screenH: 852, frameWidth: 272, frameRadius: 42, bezel: 8, type: 'iphone', statusBarH: 54, hasIsland: true, islandW: 125, islandH: 37, islandTop: 11 },
+  // Samsung — punch-hole camera, full-width status bar
+  { id: 'galaxy-s25-ultra', name: 'Galaxy S25 Ultra', icon: Smartphone, screenW: 412, screenH: 892, frameWidth: 258, frameRadius: 36, bezel: 7, type: 'samsung', statusBarH: 40, hasIsland: false },
+  { id: 'galaxy-s25-plus', name: 'Galaxy S25+', icon: Smartphone, screenW: 412, screenH: 883, frameWidth: 252, frameRadius: 34, bezel: 7, type: 'samsung', statusBarH: 40, hasIsland: false },
+  { id: 'galaxy-s25', name: 'Galaxy S25', icon: Smartphone, screenW: 360, screenH: 780, frameWidth: 242, frameRadius: 32, bezel: 7, type: 'samsung', statusBarH: 36, hasIsland: false },
   // ── iPad ──────────────────────────────────────────────────
-  { id: 'ipad-pro-13', name: 'iPad Pro 13"', icon: Monitor, screenW: 2048, screenH: 2732, frameWidth: 340, frameRadius: 24, bezel: 12, type: 'ipad' },
-  { id: 'ipad-pro-11', name: 'iPad Pro 11"', icon: Monitor, screenW: 1668, screenH: 2388, frameWidth: 320, frameRadius: 22, bezel: 12, type: 'ipad' },
+  { id: 'ipad-pro-13', name: 'iPad Pro 13"', icon: Monitor, screenW: 2048, screenH: 2732, frameWidth: 340, frameRadius: 24, bezel: 12, type: 'ipad', statusBarH: 48, hasIsland: false },
+  { id: 'ipad-pro-11', name: 'iPad Pro 11"', icon: Monitor, screenW: 1668, screenH: 2388, frameWidth: 320, frameRadius: 22, bezel: 12, type: 'ipad', statusBarH: 44, hasIsland: false },
   // ── Android Tablet ───────────────────────────────────────
-  { id: 'android-tab-10', name: 'Android Tablet 10"', icon: Monitor, screenW: 1920, screenH: 2560, frameWidth: 330, frameRadius: 20, bezel: 10, type: 'android-tab' },
+  { id: 'android-tab-10', name: 'Android Tablet 10"', icon: Monitor, screenW: 1920, screenH: 2560, frameWidth: 330, frameRadius: 20, bezel: 10, type: 'android-tab', statusBarH: 60, hasIsland: false },
   // ── Browser ────────────────────────────────────────────────
   { id: 'browser-landscape', name: 'Browser (가로)', icon: Monitor, screenW: 1440, screenH: 900, frameWidth: 520, frameRadius: 12, bezel: 0, type: 'browser' },
   { id: 'browser-portrait', name: 'Browser (세로)', icon: Monitor, screenW: 768, screenH: 1024, frameWidth: 360, frameRadius: 12, bezel: 0, type: 'browser' },
@@ -349,10 +351,11 @@ const makeDemoSvg = (bg, fg, title, icon) => {
   return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
 }
 const DEMO_SAMPLES = [
-  { id: 'demo-1', name: 'Home', src: makeDemoSvg('#667eea', '#764ba2', 'Welcome', '✨') },
-  { id: 'demo-2', name: 'Features', src: makeDemoSvg('#f093fb', '#f5576c', 'Features', '⭐') },
-  { id: 'demo-3', name: 'Stats', src: makeDemoSvg('#43e97b', '#38f9d7', 'Statistics', '📊') },
-  { id: 'demo-4', name: 'Profile', src: makeDemoSvg('#4facfe', '#00f2fe', 'Profile', '👤') },
+  // bg = gradient start (top), fg = gradient end (bottom) — reused as bottomColor for smart fill
+  { id: 'demo-1', name: 'Home',     src: makeDemoSvg('#667eea', '#764ba2', 'Welcome',    '✨'), topColor: '#667eea', bottomColor: '#764ba2' },
+  { id: 'demo-2', name: 'Features', src: makeDemoSvg('#f093fb', '#f5576c', 'Features',   '⭐'), topColor: '#f093fb', bottomColor: '#f5576c' },
+  { id: 'demo-3', name: 'Stats',    src: makeDemoSvg('#43e97b', '#38f9d7', 'Statistics', '📊'), topColor: '#43e97b', bottomColor: '#38f9d7' },
+  { id: 'demo-4', name: 'Profile',  src: makeDemoSvg('#4facfe', '#00f2fe', 'Profile',    '👤'), topColor: '#4facfe', bottomColor: '#00f2fe' },
 ]
 
 /* ═══════════════════════════════════════════════════════════════
@@ -395,6 +398,136 @@ const FONT_OPTIONS = [
 ]
 
 /* ═══════════════════════════════════════════════════════════════
+   BACKGROUND SHAPES — decorative elements that sit BEHIND the
+   device frame. Each shape has a type + visual properties.
+   ═══════════════════════════════════════════════════════════════ */
+const SHAPE_TYPES = [
+  { id: 'circle',         label: '● 원',              emoji: '●' },
+  { id: 'ring',           label: '○ 링',              emoji: '○' },
+  { id: 'soft-blob',      label: '💫 블러 원',         emoji: '💫' },
+  { id: 'square',         label: '◼ 사각',            emoji: '◼' },
+  { id: 'rounded-rect',   label: '▢ 라운드 사각',      emoji: '▢' },
+  { id: 'triangle',       label: '▲ 삼각형',          emoji: '▲' },
+  { id: 'star',           label: '★ 별',              emoji: '★' },
+  { id: 'donut',          label: '◎ 도넛',            emoji: '◎' },
+  { id: 'blob',           label: '🫧 유기체',          emoji: '🫧' },
+  { id: 'gradient-orb',   label: '🔮 그라디언트',      emoji: '🔮' },
+]
+
+/* Helper factory for default shapes */
+const makeShape = (overrides = {}) => ({
+  id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+  type: 'circle',
+  color: '#4A55A2',
+  color2: '#7C3AED',   // for gradient-orb
+  size: 280,
+  x: 50, y: 50,        // % of canvas
+  opacity: 0.6,
+  blur: 0,
+  rotate: 0,
+  ...overrides,
+})
+
+const BG_TEMPLATES = {
+  'clean': {
+    label: '🎯 Clean Solid',
+    shapes: [],
+  },
+  'app-store-pop': {
+    label: '🎨 App Store Pop',
+    shapes: [
+      { ...makeShape({ id: 'sp-1a', type: 'circle', color: '#4A55A2', size: 500, x: -5, y: -5, opacity: 0.55 }) },
+      { ...makeShape({ id: 'sp-1b', type: 'circle', color: '#7C3AED', size: 280, x: 105, y: 90, opacity: 0.45 }) },
+    ],
+  },
+  'center-glow': {
+    label: '✨ Center Glow',
+    shapes: [
+      { ...makeShape({ id: 'sp-2a', type: 'soft-blob', color: '#FF6B6B', size: 600, x: 50, y: 50, opacity: 0.75, blur: 80 }) },
+    ],
+  },
+  'diagonal': {
+    label: '🌈 Diagonal',
+    shapes: [
+      { ...makeShape({ id: 'sp-3a', type: 'circle', color: '#06B6D4', size: 350, x: 15, y: 15, opacity: 0.5 }) },
+      { ...makeShape({ id: 'sp-3b', type: 'circle', color: '#EC4899', size: 250, x: 85, y: 80, opacity: 0.55 }) },
+    ],
+  },
+  'orbit': {
+    label: '🪐 Orbit',
+    shapes: [
+      { ...makeShape({ id: 'sp-4a', type: 'circle', color: '#8B5CF6', size: 520, x: 50, y: 110, opacity: 0.4 }) },
+      { ...makeShape({ id: 'sp-4b', type: 'circle', color: '#F59E0B', size: 140, x: 18, y: 18, opacity: 0.85 }) },
+    ],
+  },
+  'halo': {
+    label: '⚪ Halo Ring',
+    shapes: [
+      { ...makeShape({ id: 'sp-5a', type: 'ring', color: '#6366F1', size: 700, x: 50, y: 50, opacity: 0.5 }) },
+    ],
+  },
+  'confetti': {
+    label: '🎊 Confetti',
+    shapes: [
+      { ...makeShape({ id: 'sp-6a', type: 'circle', color: '#F43F5E', size: 60,  x: 10, y: 20, opacity: 0.85 }) },
+      { ...makeShape({ id: 'sp-6b', type: 'circle', color: '#F59E0B', size: 40,  x: 90, y: 30, opacity: 0.85 }) },
+      { ...makeShape({ id: 'sp-6c', type: 'triangle', color: '#8B5CF6', size: 70, x: 20, y: 85, opacity: 0.85 }) },
+      { ...makeShape({ id: 'sp-6d', type: 'star', color: '#10B981', size: 80, x: 80, y: 75, opacity: 0.85 }) },
+      { ...makeShape({ id: 'sp-6e', type: 'circle', color: '#0EA5E9', size: 30, x: 55, y: 15, opacity: 0.85 }) },
+    ],
+  },
+  'duotone': {
+    label: '🌓 Duotone',
+    shapes: [
+      { ...makeShape({ id: 'sp-7a', type: 'blob', color: '#3B82F6', size: 520, x: 30, y: 30, opacity: 0.7 }) },
+      { ...makeShape({ id: 'sp-7b', type: 'blob', color: '#F472B6', size: 450, x: 75, y: 75, opacity: 0.7, rotate: 120 }) },
+    ],
+  },
+  'spotlight': {
+    label: '🔦 Spotlight',
+    shapes: [
+      { ...makeShape({ id: 'sp-8a', type: 'soft-blob', color: '#FCD34D', size: 700, x: 50, y: -20, opacity: 0.55, blur: 60 }) },
+    ],
+  },
+  'corner-frame': {
+    label: '🖼 Corner Frame',
+    shapes: [
+      { ...makeShape({ id: 'sp-9a', type: 'ring', color: '#0F172A', size: 140, x: 10, y: 10, opacity: 0.4 }) },
+      { ...makeShape({ id: 'sp-9b', type: 'ring', color: '#0F172A', size: 140, x: 90, y: 10, opacity: 0.4 }) },
+      { ...makeShape({ id: 'sp-9c', type: 'ring', color: '#0F172A', size: 140, x: 10, y: 90, opacity: 0.4 }) },
+      { ...makeShape({ id: 'sp-9d', type: 'ring', color: '#0F172A', size: 140, x: 90, y: 90, opacity: 0.4 }) },
+    ],
+  },
+  'sunrise': {
+    label: '🌅 Sunrise',
+    shapes: [
+      { ...makeShape({ id: 'sp-10a', type: 'gradient-orb', color: '#FEC260', color2: '#F43F5E', size: 560, x: 50, y: 95, opacity: 0.95 }) },
+    ],
+  },
+  'gradient-stack': {
+    label: '🎆 Gradient Stack',
+    shapes: [
+      { ...makeShape({ id: 'sp-11a', type: 'gradient-orb', color: '#A855F7', color2: '#3B82F6', size: 600, x: 25, y: 35, opacity: 0.65, blur: 0 }) },
+      { ...makeShape({ id: 'sp-11b', type: 'gradient-orb', color: '#F472B6', color2: '#FB923C', size: 400, x: 85, y: 80, opacity: 0.65, blur: 0 }) },
+    ],
+  },
+  'bento-dots': {
+    label: '⬜ Dot Grid',
+    shapes: Array.from({ length: 20 }, (_, i) => ({
+      ...makeShape({
+        id: `sp-12-${i}`,
+        type: 'circle',
+        color: '#6366F1',
+        size: 20,
+        x: 10 + (i % 5) * 20,
+        y: 10 + Math.floor(i / 5) * 25,
+        opacity: 0.35,
+      }),
+    })),
+  },
+}
+
+/* ═══════════════════════════════════════════════════════════════
    STORE FORMAT PRESETS — export resolution + matching device
    ═══════════════════════════════════════════════════════════════ */
 const STORE_PRESETS = [
@@ -417,34 +550,110 @@ const STORE_PRESETS = [
 /* ═══════════════════════════════════════════════════════════════
    IPHONE FRAME
    ═══════════════════════════════════════════════════════════════ */
-function IPhoneFrame({ src, device, shadow, scale = 1, frameColor }) {
+/**
+ * IPhoneFrame — CSS Bezel Mode
+ *
+ * cleanStatusBar modes:
+ *   'off'   → original image as-is, no overlay
+ *   'show'  → 9:41 + icons on top (NO masking; use when image has no status bar)
+ *   'cover' → opaque strip covers original + 9:41 + icons (hides simulator UI)
+ *
+ * Dynamic Island is ALWAYS z:60 — nothing shows through it.
+ * Screen uses explicit width/height px for perfect preview/export parity.
+ */
+function IPhoneFrame({ src, device, shadow, scale = 1, frameColor, topColor, topIsLight, coverColor, cleanStatusBar = 'off' }) {
   const w = device.frameWidth * scale
-  const r = device.frameRadius * scale
   const bezel = device.bezel * scale
+  const rOuter = device.frameRadius * scale
+  const rInner = rOuter - bezel
+  const screenInnerW = w - 2 * bezel
+  const screenInnerH = screenInnerW * (device.screenH / device.screenW)
+  const screenScale = screenInnerW / device.screenW
   const fc = frameColor || FRAME_COLORS[0]
+
+  const islandW = (device.islandW || 125) * screenScale
+  const islandH = (device.islandH || 37) * screenScale
+  const islandTop = (device.islandTop || 11) * screenScale
+  const statusBarH = (device.statusBarH || 0) * screenScale
+  const maskBg = coverColor || topColor || "#000000"
+  const iconColor = isLightColor(maskBg) ? '#000000' : '#ffffff'
+  const edgePad = 24 * screenScale
+  const iconH = Math.max(7, 11 * screenScale)
+  const showBar = cleanStatusBar === 'show' || cleanStatusBar === 'cover'
+  const maskOn = cleanStatusBar === 'cover'
 
   return (
     <div style={{ position: 'relative', width: w }}>
+      {/* Side buttons */}
       <div style={{ position: 'absolute', left: -2.5 * scale, top: 68 * scale, width: 2.5 * scale, height: 16 * scale, borderRadius: `${2 * scale}px 0 0 ${2 * scale}px`, background: fc.btn }} />
       <div style={{ position: 'absolute', left: -2.5 * scale, top: 100 * scale, width: 2.5 * scale, height: 28 * scale, borderRadius: `${2 * scale}px 0 0 ${2 * scale}px`, background: fc.btn }} />
       <div style={{ position: 'absolute', left: -2.5 * scale, top: 136 * scale, width: 2.5 * scale, height: 28 * scale, borderRadius: `${2 * scale}px 0 0 ${2 * scale}px`, background: fc.btn }} />
       <div style={{ position: 'absolute', right: -2.5 * scale, top: 108 * scale, width: 2.5 * scale, height: 48 * scale, borderRadius: `0 ${2 * scale}px ${2 * scale}px 0`, background: fc.btn }} />
 
+      {/* Outer bezel — overflow:hidden + rOuter clips inner children to rounded phone shape */}
       <div style={{
-        width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
-        background: fc.body, position: 'relative', overflow: 'hidden',
+        width: w, padding: bezel,
+        borderRadius: rOuter, overflow: 'hidden',
+        background: fc.body, boxShadow: shadow,
+        position: 'relative', boxSizing: 'border-box',
       }}>
-        {/* Outer bezel highlight */}
-        <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.12)', pointerEvents: 'none', zIndex: 5 }} />
-        {/* Screen — inset with visible gap from frame body */}
+        <div style={{ position: 'absolute', inset: 0, borderRadius: rOuter, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.12)', pointerEvents: 'none', zIndex: 5 }} />
+
+        {/* Inner screen — explicit w/h, overflow:hidden + rInner = perfect corner clipping */}
         <div style={{
-          width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+          width: screenInnerW, height: screenInnerH,
+          borderRadius: rInner, overflow: 'hidden',
+          background: '#000', position: 'relative',
           boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.3)`,
         }}>
-          <div style={{ position: 'absolute', top: 8 * scale, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-            <div style={{ background: fc.island, borderRadius: 999, width: 72 * scale, height: 22 * scale }} />
+          {/* Screenshot — child of screen, clipped by parent rounded corners */}
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'top center',
+              display: 'block',
+            }}
+          />
+
+          {/* Cover strip — opaque mask over original status bar (only in 'cover' mode) */}
+          {maskOn && device.statusBarH && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: statusBarH, background: maskBg, zIndex: 50,
+            }} />
+          )}
+
+          {/* Clean status bar text + icons (visible in both 'show' and 'cover' modes) */}
+          {showBar && device.statusBarH && (
+            <>
+              <span style={{
+                position: 'absolute', left: edgePad,
+                top: islandTop + islandH / 2, transform: 'translateY(-50%)',
+                color: iconColor, fontSize: Math.max(8, 15 * screenScale),
+                fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+                fontFamily: '-apple-system, "SF Pro Display", system-ui',
+                zIndex: 55, pointerEvents: 'none',
+              }}>9:41</span>
+              <div style={{
+                position: 'absolute', right: edgePad,
+                top: islandTop + islandH / 2, transform: 'translateY(-50%)',
+                zIndex: 55, pointerEvents: 'none',
+              }}>
+                <StatusBarIcons color={iconColor} h={iconH} scale={screenScale} />
+              </div>
+            </>
+          )}
+
+          {/* Dynamic Island — ALWAYS on top (z:60), nothing shows through */}
+          <div style={{
+            position: 'absolute', top: islandTop, left: '50%',
+            transform: 'translateX(-50%)', zIndex: 60,
+          }}>
+            <div style={{ background: fc.island, borderRadius: 999, width: islandW, height: islandH }} />
           </div>
-          <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
         </div>
       </div>
     </div>
@@ -454,11 +663,23 @@ function IPhoneFrame({ src, device, shadow, scale = 1, frameColor }) {
 /* ═══════════════════════════════════════════════════════════════
    SAMSUNG FRAME
    ═══════════════════════════════════════════════════════════════ */
-function SamsungFrame({ src, device, shadow, scale = 1, frameColor }) {
+function SamsungFrame({ src, device, shadow, scale = 1, frameColor, topColor, topIsLight, coverColor, cleanStatusBar = 'off' }) {
   const w = device.frameWidth * scale
-  const r = device.frameRadius * scale
   const bezel = device.bezel * scale
+  const rOuter = device.frameRadius * scale
+  const rInner = rOuter - bezel
+  const screenInnerW = w - 2 * bezel
+  const screenInnerH = screenInnerW * (device.screenH / device.screenW)
+  const screenScale = screenInnerW / device.screenW
   const fc = frameColor || FRAME_COLORS[1]
+  const statusBarH = (device.statusBarH || 0) * screenScale
+  const maskBg = coverColor || topColor || "#000000"
+  const iconColor = isLightColor(maskBg) ? '#000000' : '#ffffff'
+  const edgePad = 24 * screenScale
+  const iconH = Math.max(7, 11 * screenScale)
+  const showBar = cleanStatusBar === 'show' || cleanStatusBar === 'cover'
+  const maskOn = cleanStatusBar === 'cover'
+
   return (
     <div style={{ position: 'relative', width: w }}>
       <div style={{ position: 'absolute', right: -2.5 * scale, top: 82 * scale, width: 2.5 * scale, height: 36 * scale, borderRadius: `0 ${2 * scale}px ${2 * scale}px 0`, background: fc.btn }} />
@@ -466,18 +687,41 @@ function SamsungFrame({ src, device, shadow, scale = 1, frameColor }) {
       <div style={{ position: 'absolute', right: -2.5 * scale, top: 158 * scale, width: 2.5 * scale, height: 24 * scale, borderRadius: `0 ${2 * scale}px ${2 * scale}px 0`, background: fc.btn }} />
 
       <div style={{
-        width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
-        background: fc.body, position: 'relative', overflow: 'hidden',
+        width: w, padding: bezel,
+        borderRadius: rOuter, overflow: 'hidden',
+        background: fc.body, boxShadow: shadow,
+        position: 'relative', boxSizing: 'border-box',
       }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15)', pointerEvents: 'none', zIndex: 5 }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: rOuter, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15)', pointerEvents: 'none', zIndex: 5 }} />
+
         <div style={{
-          width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+          width: screenInnerW, height: screenInnerH,
+          borderRadius: rInner, overflow: 'hidden',
+          background: '#000', position: 'relative',
           boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.3)`,
         }}>
-          <div style={{ position: 'absolute', top: 10 * scale, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+          <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+
+          {maskOn && device.statusBarH && (
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: statusBarH, background: maskBg, zIndex: 50 }} />
+          )}
+          {showBar && device.statusBarH && (
+            <>
+              <span style={{
+                position: 'absolute', left: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)',
+                color: iconColor, fontSize: Math.max(8, 15 * screenScale), fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+                fontFamily: '-apple-system, "SF Pro Display", system-ui', zIndex: 55, pointerEvents: 'none',
+              }}>9:41</span>
+              <div style={{ position: 'absolute', right: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)', zIndex: 55, pointerEvents: 'none' }}>
+                <StatusBarIcons color={iconColor} h={iconH} scale={screenScale} />
+              </div>
+            </>
+          )}
+
+          {/* Punch-hole camera — z:60 */}
+          <div style={{ position: 'absolute', top: 10 * scale, left: '50%', transform: 'translateX(-50%)', zIndex: 60 }}>
             <div style={{ width: 10 * scale, height: 10 * scale, borderRadius: '50%', background: '#0a0a0a', boxShadow: '0 0 0 1.5px rgba(255,255,255,0.08)' }} />
           </div>
-          <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
         </div>
       </div>
     </div>
@@ -487,22 +731,53 @@ function SamsungFrame({ src, device, shadow, scale = 1, frameColor }) {
 /* ═══════════════════════════════════════════════════════════════
    IPAD FRAME
    ═══════════════════════════════════════════════════════════════ */
-function IPadFrame({ src, device, shadow, scale = 1, frameColor }) {
+function IPadFrame({ src, device, shadow, scale = 1, frameColor, topColor, topIsLight, coverColor, cleanStatusBar = 'off' }) {
   const w = device.frameWidth * scale
-  const r = device.frameRadius * scale
   const bezel = device.bezel * scale
+  const rOuter = device.frameRadius * scale
+  const rInner = rOuter - bezel
+  const screenInnerW = w - 2 * bezel
+  const screenInnerH = screenInnerW * (device.screenH / device.screenW)
+  const screenScale = screenInnerW / device.screenW
   const fc = frameColor || FRAME_COLORS[0]
+  const statusBarH = (device.statusBarH || 0) * screenScale
+  const maskBg = coverColor || topColor || "#000000"
+  const iconColor = isLightColor(maskBg) ? '#000000' : '#ffffff'
+  const edgePad = 24 * screenScale
+  const iconH = Math.max(7, 11 * screenScale)
+  const showBar = cleanStatusBar === 'show' || cleanStatusBar === 'cover'
+  const maskOn = cleanStatusBar === 'cover'
+
   return (
     <div style={{
-      width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
-      background: fc.body, position: 'relative', overflow: 'hidden',
+      width: w, padding: bezel,
+      borderRadius: rOuter, overflow: 'hidden',
+      background: fc.body, boxShadow: shadow,
+      position: 'relative', boxSizing: 'border-box',
     }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.1)', pointerEvents: 'none', zIndex: 5 }} />
+      <div style={{ position: 'absolute', inset: 0, borderRadius: rOuter, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.1)', pointerEvents: 'none', zIndex: 5 }} />
       <div style={{
-        width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+        width: screenInnerW, height: screenInnerH,
+        borderRadius: rInner, overflow: 'hidden',
+        background: '#000', position: 'relative',
         boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.2)`,
       }}>
-        <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
+        <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+        {maskOn && device.statusBarH && (
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: statusBarH, background: maskBg, zIndex: 50 }} />
+        )}
+        {showBar && device.statusBarH && (
+          <>
+            <span style={{
+              position: 'absolute', left: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)',
+              color: iconColor, fontSize: Math.max(8, 15 * screenScale), fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+              fontFamily: '-apple-system, "SF Pro Display", system-ui', zIndex: 55, pointerEvents: 'none',
+            }}>9:41</span>
+            <div style={{ position: 'absolute', right: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)', zIndex: 55, pointerEvents: 'none' }}>
+              <StatusBarIcons color={iconColor} h={iconH} scale={screenScale} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -511,22 +786,53 @@ function IPadFrame({ src, device, shadow, scale = 1, frameColor }) {
 /* ═══════════════════════════════════════════════════════════════
    ANDROID TABLET FRAME
    ═══════════════════════════════════════════════════════════════ */
-function AndroidTabFrame({ src, device, shadow, scale = 1, frameColor }) {
+function AndroidTabFrame({ src, device, shadow, scale = 1, frameColor, topColor, topIsLight, coverColor, cleanStatusBar = 'off' }) {
   const w = device.frameWidth * scale
-  const r = device.frameRadius * scale
   const bezel = device.bezel * scale
+  const rOuter = device.frameRadius * scale
+  const rInner = rOuter - bezel
+  const screenInnerW = w - 2 * bezel
+  const screenInnerH = screenInnerW * (device.screenH / device.screenW)
+  const screenScale = screenInnerW / device.screenW
   const fc = frameColor || FRAME_COLORS[1]
+  const statusBarH = (device.statusBarH || 0) * screenScale
+  const maskBg = coverColor || topColor || "#000000"
+  const iconColor = isLightColor(maskBg) ? '#000000' : '#ffffff'
+  const edgePad = 24 * screenScale
+  const iconH = Math.max(7, 11 * screenScale)
+  const showBar = cleanStatusBar === 'show' || cleanStatusBar === 'cover'
+  const maskOn = cleanStatusBar === 'cover'
+
   return (
     <div style={{
-      width: w, borderRadius: r, padding: bezel, boxShadow: shadow,
-      background: fc.body, position: 'relative', overflow: 'hidden',
+      width: w, padding: bezel,
+      borderRadius: rOuter, overflow: 'hidden',
+      background: fc.body, boxShadow: shadow,
+      position: 'relative', boxSizing: 'border-box',
     }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: r, boxShadow: 'inset 0 0.5px 0 rgba(255,255,255,0.15), inset 0 -0.5px 0 rgba(0,0,0,0.15)', pointerEvents: 'none', zIndex: 5 }} />
+      <div style={{ position: 'absolute', inset: 0, borderRadius: rOuter, boxShadow: 'inset 0 0.5px 0 rgba(255,255,255,0.15), inset 0 -0.5px 0 rgba(0,0,0,0.15)', pointerEvents: 'none', zIndex: 5 }} />
       <div style={{
-        width: '100%', borderRadius: r - bezel, overflow: 'hidden', background: '#000', position: 'relative',
+        width: screenInnerW, height: screenInnerH,
+        borderRadius: rInner, overflow: 'hidden',
+        background: '#000', position: 'relative',
         boxShadow: `inset 0 0 0 ${0.5 * scale}px rgba(0,0,0,0.2)`,
       }}>
-        <img src={src} alt="" draggable={false} style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
+        <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+        {maskOn && device.statusBarH && (
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: statusBarH, background: maskBg, zIndex: 50 }} />
+        )}
+        {showBar && device.statusBarH && (
+          <>
+            <span style={{
+              position: 'absolute', left: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)',
+              color: iconColor, fontSize: Math.max(8, 15 * screenScale), fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+              fontFamily: '-apple-system, "SF Pro Display", system-ui', zIndex: 55, pointerEvents: 'none',
+            }}>9:41</span>
+            <div style={{ position: 'absolute', right: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)', zIndex: 55, pointerEvents: 'none' }}>
+              <StatusBarIcons color={iconColor} h={iconH} scale={screenScale} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -572,15 +878,15 @@ function GlassFrame({ src, device, shadow, scale = 1 }) {
 /* ═══════════════════════════════════════════════════════════════
    DEVICE FRAME ROUTER
    ═══════════════════════════════════════════════════════════════ */
-function DeviceFrame({ src, device, shadow, scale = 1, frameColor }) {
-  const p = { src, device, shadow, scale, frameColor }
+function DeviceFrame({ src, device, shadow, scale = 1, frameColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar }) {
+  const p = { src, device, shadow, scale, frameColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar }
   switch (device.type) {
     case 'iphone': return <IPhoneFrame {...p} />
     case 'samsung': return <SamsungFrame {...p} />
     case 'ipad': return <IPadFrame {...p} />
     case 'android-tab': return <AndroidTabFrame {...p} />
-    case 'browser': return <BrowserFrame {...p} />
-    case 'glass': return <GlassFrame {...p} />
+    case 'browser': return <BrowserFrame src={src} device={device} shadow={shadow} scale={scale} />
+    case 'glass': return <GlassFrame src={src} device={device} shadow={shadow} scale={scale} />
     default: return null
   }
 }
@@ -649,11 +955,25 @@ function Device3D({ src, device, shadow, scale = 1, frameColor, depth = 8 }) {
 /* ═══════════════════════════════════════════════════════════════
    SIMPLE MOCKUP CARD  (Tab 1)
    ═══════════════════════════════════════════════════════════════ */
-function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor }) {
+function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeId = null, onSelectShape, onMoveShape, interactiveShapes = false }) {
   const bgStyle = bg.isTransparent ? { background: 'transparent' } : bg.value.includes('gradient') ? { background: bg.value } : { backgroundColor: bg.value }
   return (
-    <div ref={cardRef} style={{ ...bgStyle, padding: padding * scale, borderRadius: 16 * scale, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
-      <DeviceFrame src={src} device={device} shadow={shadow.value} scale={scale} frameColor={frameColor} />
+    <div ref={cardRef} style={{ ...bgStyle, padding: padding * scale, borderRadius: 16 * scale, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+      {/* Background shapes — behind device, clipped by card borderRadius */}
+      {backgroundShapes.length > 0 && (
+        <BackgroundCanvas
+          shapes={backgroundShapes}
+          selectedId={selectedShapeId}
+          onSelect={onSelectShape}
+          onShapeMove={onMoveShape}
+          interactive={interactiveShapes}
+          canvasScale={scale}
+          borderRadius={16 * scale}
+        />
+      )}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <DeviceFrame src={src} device={device} shadow={shadow.value} scale={scale} frameColor={frameColor} topColor={topColor} topIsLight={topIsLight} bottomColor={bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBar} />
+      </div>
     </div>
   )
 }
@@ -661,7 +981,7 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily, subTextColor }) {
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily, subTextColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeId = null, onSelectShape, onMoveShape, interactiveShapes = false }) {
   const canvasW = exportW ? exportW * scale : 360 * scale
   const canvasH = exportH ? exportH * scale : canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
@@ -683,6 +1003,19 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         position: 'relative',
       }}
     >
+      {/* Background shapes — decorative layer behind everything */}
+      {backgroundShapes.length > 0 && (
+        <BackgroundCanvas
+          shapes={backgroundShapes}
+          selectedId={selectedShapeId}
+          onSelect={onSelectShape}
+          onShapeMove={onMoveShape}
+          interactive={interactiveShapes}
+          canvasScale={scale}
+          borderRadius={16 * scale}
+        />
+      )}
+
       {/* Text area */}
       <div style={{
         flex: `0 0 ${textTop}%`,
@@ -692,6 +1025,7 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         justifyContent: 'center',
         padding: `${16 * scale}px ${22 * scale}px ${4 * scale}px`,
         textAlign: 'center',
+        position: 'relative', zIndex: 1,
       }}>
         <h2 style={{
           fontSize: titleSize * scale,
@@ -727,8 +1061,9 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
         justifyContent: 'center',
         position: 'relative',
         marginTop: gap * scale,
+        zIndex: 1,
       }}>
-        <DeviceFrame src={src} device={device} shadow={shadow.value} scale={deviceScale} frameColor={frameColor} />
+        <DeviceFrame src={src} device={device} shadow={shadow.value} scale={deviceScale} frameColor={frameColor} topColor={topColor} topIsLight={topIsLight} bottomColor={bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBar} />
       </div>
     </div>
   )
@@ -815,6 +1150,400 @@ function isLightColor(hex) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   CANVAS SAMPLERS — top-left + center-bottom patch colors
+   Top sample drives status-bar eraser color; bottom sample drives
+   the seamless bottom fill on the ScreenMask container.
+   ═══════════════════════════════════════════════════════════════ */
+function sampleImageTop(imgSrc) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        const stripH = Math.max(1, Math.round(img.naturalHeight * 0.05))
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth; c.height = stripH
+        const ctx = c.getContext('2d')
+        ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, c.width, c.height)
+        const px = Math.min(10, c.width - 1)
+        const py = Math.min(10, c.height - 1)
+        const pw = Math.min(20, c.width - px)
+        const ph = Math.min(20, c.height - py)
+        const data = ctx.getImageData(px, py, pw, ph).data
+        let r = 0, g = 0, b = 0, n = 0
+        for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; n++ }
+        r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n)
+        const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+        const isLight = (r * 299 + g * 587 + b * 114) / 1000 > 140
+        resolve({ color: hex, isLight })
+      }
+      img.onerror = () => resolve({ color: '#ffffff', isLight: true })
+      img.src = imgSrc
+    } catch { resolve({ color: '#ffffff', isLight: true }) }
+  })
+}
+
+function sampleImageBottom(imgSrc) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      img.onload = () => {
+        const stripH = Math.max(1, Math.round(img.naturalHeight * 0.05))
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth; c.height = stripH
+        const ctx = c.getContext('2d')
+        ctx.drawImage(img, 0, img.naturalHeight - stripH, img.naturalWidth, stripH, 0, 0, c.width, stripH)
+        const pw = Math.min(20, c.width)
+        const ph = Math.min(20, c.height)
+        const px = Math.max(0, Math.floor((c.width - pw) / 2))
+        const py = Math.max(0, c.height - ph)
+        const data = ctx.getImageData(px, py, pw, ph).data
+        let r = 0, g = 0, b = 0, n = 0
+        for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; n++ }
+        r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n)
+        const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+        resolve({ color: hex })
+      }
+      img.onerror = () => resolve({ color: '#000000' })
+      img.src = imgSrc
+    } catch { resolve({ color: '#000000' }) }
+  })
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STANDARD STATUS BAR — "9:41" + signal / wifi / battery (SVG)
+   Two layouts:
+     • hasIsland: split eraser (left + right boxes, island in the gap)
+     • full-width: single opaque strip
+   All positioning is absolute to the PARENT container (which should
+   be positioned + sized to match the screen area).
+   ═══════════════════════════════════════════════════════════════ */
+function StandardStatusBar({ device, screenScale, maskBg, isDark = false }) {
+  const baseScale = screenScale
+  const statusBarH = (device.statusBarH || 44) * baseScale
+  const color = isDark ? '#ffffff' : '#000000'
+  const fontSize = Math.max(8, 15 * baseScale)
+  const iconH = Math.max(7, 11 * baseScale)
+  const edgePad = 24 * baseScale
+
+  if (device.hasIsland) {
+    const islandW = (device.islandW || 125) * baseScale
+    const islandTop = (device.islandTop || 11) * baseScale
+    const islandH = (device.islandH || 37) * baseScale
+    const islandCenterY = islandTop + islandH / 2
+    const halfIsland = islandW / 2 + 6 * baseScale
+    return (
+      <>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: `calc(50% - ${halfIsland}px)`, height: statusBarH, background: maskBg, zIndex: 11 }} />
+        <div style={{ position: 'absolute', top: 0, right: 0, width: `calc(50% - ${halfIsland}px)`, height: statusBarH, background: maskBg, zIndex: 11 }} />
+        <span style={{
+          position: 'absolute', left: edgePad, top: islandCenterY, transform: 'translateY(-50%)',
+          color, fontSize, fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+          fontFamily: '-apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif',
+          zIndex: 12, pointerEvents: 'none',
+        }}>9:41</span>
+        <div style={{ position: 'absolute', right: edgePad, top: islandCenterY, transform: 'translateY(-50%)', zIndex: 12, pointerEvents: 'none' }}>
+          <StatusBarIcons color={color} h={iconH} scale={baseScale} />
+        </div>
+      </>
+    )
+  }
+
+  // No-island layout: single opaque strip
+  return (
+    <>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: statusBarH, background: maskBg, zIndex: 11 }} />
+      <span style={{
+        position: 'absolute', left: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)',
+        color, fontSize, fontWeight: 700, letterSpacing: -0.3, lineHeight: 1,
+        fontFamily: '-apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif',
+        zIndex: 12, pointerEvents: 'none',
+      }}>9:41</span>
+      <div style={{ position: 'absolute', right: edgePad, top: statusBarH / 2, transform: 'translateY(-50%)', zIndex: 12, pointerEvents: 'none' }}>
+        <StatusBarIcons color={color} h={iconH} scale={baseScale} />
+      </div>
+    </>
+  )
+}
+
+function StatusBarIcons({ color, h, scale }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 * scale }}>
+      {/* Signal bars */}
+      <svg width={h * 1.5} height={h} viewBox="0 0 17 12" fill={color}>
+        <rect x="0" y="8" width="3" height="4" rx="0.8" />
+        <rect x="4.5" y="6" width="3" height="6" rx="0.8" />
+        <rect x="9" y="3" width="3" height="9" rx="0.8" />
+        <rect x="13.5" y="0" width="3" height="12" rx="0.8" />
+      </svg>
+      {/* WiFi */}
+      <svg width={h * 1.4} height={h} viewBox="0 0 15 11" fill={color}>
+        <path d="M7.5 2c2.5 0 4.9 0.93 6.8 2.5l-1.1 1.3C11.6 4.5 9.6 3.8 7.5 3.8S3.4 4.5 1.8 5.8L0.7 4.5C2.6 2.9 5 2 7.5 2zm0 3c1.7 0 3.3 0.6 4.5 1.7l-1.1 1.3C10 7.2 8.8 6.8 7.5 6.8S5 7.2 4.1 8l-1.1-1.3C4.2 5.6 5.8 5 7.5 5zm0 3c0.85 0 1.65 0.3 2.3 0.83l-1.1 1.3c-0.35-0.28-0.78-0.43-1.2-0.43s-0.85 0.15-1.2 0.43l-1.1-1.3C5.85 8.3 6.65 8 7.5 8z" />
+      </svg>
+      {/* Battery (100%) */}
+      <svg width={h * 2.2} height={h} viewBox="0 0 26 12" fill="none">
+        <rect x="0.5" y="0.5" width="22" height="11" rx="3" stroke={color} strokeOpacity="0.5" strokeWidth="1" fill="none" />
+        <rect x="23" y="3.5" width="1.5" height="5" rx="0.5" fill={color} fillOpacity="0.5" />
+        <rect x="2" y="2" width="19" height="8" rx="1.6" fill={color} />
+      </svg>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHAPE RENDERER — draws a single shape with correct geometry
+   (used inside BackgroundCanvas).
+   ═══════════════════════════════════════════════════════════════ */
+/**
+ * PreviewScaler — wraps a fixed-pixel card in a container that visually
+ * scales it via CSS transform. The card itself stays at its natural pixel
+ * dimensions (scale=1), so its DOM is IDENTICAL whether it's shown as a
+ * thumbnail or captured by html-to-image for export.
+ *
+ * Props:
+ *   width  — full pixel width of the child card (the "export" width)
+ *   height — full pixel height of the child card
+ *   scale  — visual scale factor (e.g. 0.55 for thumbnail)
+ *   className, style — forwarded to the OUTER clipping div
+ *   onClick — attached to the outer div
+ */
+function PreviewScaler({ width, height, scale = 1, className, style, onClick, children }) {
+  return (
+    <div
+      onClick={onClick}
+      className={className}
+      style={{
+        width: width * scale,
+        height: height * scale,
+        overflow: 'hidden',
+        position: 'relative',
+        ...style,
+      }}
+    >
+      <div style={{
+        width, height,
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+      }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * AutoFitScaler — like PreviewScaler but computes the scale automatically so
+ * the fixed-pixel card fits the available viewport (maxVh vertically, parent
+ * width horizontally). Uses ResizeObserver to reflow on viewport change.
+ */
+function AutoFitScaler({ cardW, cardH, maxVh = 55, className, style, children }) {
+  const outerRef = useRef(null)
+  const [scale, setScale] = useState(0.5)
+
+  useEffect(() => {
+    const el = outerRef.current
+    if (!el) return
+    const fit = () => {
+      const availW = el.clientWidth || 600
+      const availH = Math.min(window.innerHeight * (maxVh / 100), 900)
+      const s = Math.min(availW / cardW, availH / cardH, 1)
+      setScale(Math.max(0.1, s))
+    }
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(el)
+    window.addEventListener('resize', fit)
+    return () => { ro.disconnect(); window.removeEventListener('resize', fit) }
+  }, [cardW, cardH, maxVh])
+
+  return (
+    <div ref={outerRef} className={className} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', ...style }}>
+      <div style={{
+        width: cardW * scale, height: cardH * scale,
+        overflow: 'hidden', position: 'relative',
+      }}>
+        <div style={{
+          width: cardW, height: cardH,
+          transform: `scale(${scale})`, transformOrigin: 'top left',
+        }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Shape({ s, selected, onMouseDown, onClick, canvasScale = 1 }) {
+  const sz = s.size * canvasScale
+  const commonStyle = {
+    position: 'absolute',
+    top: `${s.y}%`, left: `${s.x}%`,
+    width: sz, height: sz,
+    transform: `translate(-50%, -50%) rotate(${s.rotate || 0}deg)`,
+    opacity: s.opacity,
+    filter: s.blur ? `blur(${s.blur * canvasScale}px)` : undefined,
+    cursor: onMouseDown ? 'move' : 'default',
+    outline: selected ? '2px dashed rgb(139,92,246)' : 'none',
+    outlineOffset: 4 * canvasScale,
+    pointerEvents: onMouseDown ? 'auto' : 'none',
+  }
+  const onDownStop = (e) => { e.stopPropagation(); onMouseDown && onMouseDown(e, s.id) }
+  const onClickStop = (e) => { e.stopPropagation(); onClick && onClick(s.id) }
+
+  switch (s.type) {
+    case 'ring':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          borderRadius: '50%',
+          border: `${Math.max(4, sz * 0.06)}px solid ${s.color}`,
+          boxSizing: 'border-box',
+        }} />
+      )
+    case 'donut':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          borderRadius: '50%',
+          background: s.color,
+          WebkitMask: `radial-gradient(circle, transparent ${sz * 0.3}px, black ${sz * 0.31}px)`,
+          mask: `radial-gradient(circle, transparent ${sz * 0.3}px, black ${sz * 0.31}px)`,
+        }} />
+      )
+    case 'soft-blob':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          borderRadius: '50%',
+          background: s.color,
+        }} />
+      )
+    case 'square':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          background: s.color,
+        }} />
+      )
+    case 'rounded-rect':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          background: s.color,
+          borderRadius: sz * 0.18,
+        }} />
+      )
+    case 'triangle': {
+      const pts = `${sz/2},0 ${sz},${sz} 0,${sz}`
+      return (
+        <svg onMouseDown={onDownStop} onClick={onClickStop} width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={commonStyle}>
+          <polygon points={pts} fill={s.color} />
+        </svg>
+      )
+    }
+    case 'star': {
+      const cx = sz / 2, cy = sz / 2, rO = sz / 2, rI = sz * 0.22
+      const pts = []
+      for (let i = 0; i < 10; i++) {
+        const angle = (Math.PI / 5) * i - Math.PI / 2
+        const r = i % 2 === 0 ? rO : rI
+        pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`)
+      }
+      return (
+        <svg onMouseDown={onDownStop} onClick={onClickStop} width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={commonStyle}>
+          <polygon points={pts.join(' ')} fill={s.color} />
+        </svg>
+      )
+    }
+    case 'blob': {
+      // Organic SVG path
+      return (
+        <svg onMouseDown={onDownStop} onClick={onClickStop} width={sz} height={sz} viewBox="0 0 200 200" style={commonStyle}>
+          <path d="M44.5,-58.4C55.3,-45.5,60.1,-29.4,63.4,-13.1C66.7,3.2,68.5,19.7,61.7,31.6C54.9,43.5,39.5,50.9,24.1,56.1C8.7,61.3,-6.7,64.4,-22.4,61.3C-38.1,58.1,-54,48.7,-61.6,34.5C-69.2,20.3,-68.5,1.3,-63.8,-15.1C-59.1,-31.5,-50.4,-45.3,-38.4,-57.8C-26.4,-70.3,-13.2,-81.5,1.6,-83.5C16.4,-85.5,32.8,-78.3,44.5,-58.4Z" transform="translate(100 100)" fill={s.color} />
+        </svg>
+      )
+    }
+    case 'gradient-orb':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 30% 30%, ${s.color}, ${s.color2 || s.color})`,
+        }} />
+      )
+    case 'circle':
+    default:
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={{
+          ...commonStyle,
+          borderRadius: '50%',
+          background: s.color,
+        }} />
+      )
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BACKGROUND CANVAS — overflow-clipped container for shapes.
+   Supports drag-to-move via native mouse events.
+   ═══════════════════════════════════════════════════════════════ */
+function BackgroundCanvas({ shapes = [], bgColor, selectedId, onSelect, onShapeMove, canvasScale = 1, interactive = false, borderRadius = 0 }) {
+  const canvasRef = useRef(null)
+
+  const handleMouseDown = (e, id) => {
+    if (!interactive || !canvasRef.current) return
+    const rect = canvasRef.current.getBoundingClientRect()
+    const startX = e.clientX
+    const startY = e.clientY
+    const shape = shapes.find(s => s.id === id)
+    if (!shape) return
+    const startXpct = shape.x
+    const startYpct = shape.y
+
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX
+      const dy = ev.clientY - startY
+      const xPct = startXpct + (dx / rect.width) * 100
+      const yPct = startYpct + (dy / rect.height) * 100
+      onShapeMove && onShapeMove(id, { x: xPct, y: yPct })
+    }
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  return (
+    <div
+      ref={canvasRef}
+      data-bg-canvas
+      onClick={() => interactive && onSelect && onSelect(null)}
+      style={{
+        position: 'absolute', inset: 0,
+        overflow: 'hidden',
+        borderRadius,
+        background: bgColor || undefined,
+        zIndex: 0,
+      }}
+    >
+      {shapes.map(s => (
+        <Shape
+          key={s.id}
+          s={s}
+          selected={interactive && selectedId === s.id}
+          canvasScale={canvasScale}
+          onMouseDown={interactive ? handleMouseDown : undefined}
+          onClick={interactive ? onSelect : undefined}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MAIN APP
    ═══════════════════════════════════════════════════════════════ */
 export default function App() {
@@ -851,6 +1580,38 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)    // enlarged preview
 
   const [frameColor, setFrameColor] = useState(FRAME_COLORS[0])
+  // Per-device Clean Status Bar toggle: { [deviceId]: boolean }
+  const [cleanStatusBarMap, setCleanStatusBarMap] = useState({})
+  // cleanStatusBarMode per device: 'off' | 'show' | 'cover'
+  const cleanStatusBarMode = cleanStatusBarMap[device.id] || 'off'
+  const setCleanStatusBarMode = (mode) => setCleanStatusBarMap(prev => ({ ...prev, [device.id]: mode }))
+  // coverColor per device: null = auto (sample from image), else a hex like '#ffffff'
+  const [coverColorMap, setCoverColorMap] = useState({})
+  const coverColor = coverColorMap[device.id] || null
+  const setCoverColor = (color) => setCoverColorMap(prev => ({ ...prev, [device.id]: color }))
+
+  // Background shapes — decorative elements BEHIND the device frame
+  const [backgroundShapes, setBackgroundShapes] = useState([])
+  const [selectedShapeId, setSelectedShapeId] = useState(null)
+  const selectedShape = backgroundShapes.find(s => s.id === selectedShapeId)
+  const updateShape = (id, updates) => setBackgroundShapes(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+  const moveShape = (id, { x, y }) => updateShape(id, { x, y })
+  const addShape = (type = 'circle') => {
+    const s = makeShape({ type, x: 50, y: 50, size: 240 })
+    setBackgroundShapes(prev => [...prev, s])
+    setSelectedShapeId(s.id)
+  }
+  const removeShape = (id) => {
+    setBackgroundShapes(prev => prev.filter(s => s.id !== id))
+    if (selectedShapeId === id) setSelectedShapeId(null)
+  }
+  const applyBgTemplate = (tplId) => {
+    const tpl = BG_TEMPLATES[tplId]
+    if (!tpl) return
+    // Clone with fresh ids to avoid key collisions
+    setBackgroundShapes(tpl.shapes.map(s => ({ ...s, id: `bg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` })))
+    setSelectedShapeId(null)
+  }
 
   // App Store tab state — global defaults
   const [asTitle, setAsTitle] = useState('')
@@ -982,6 +1743,9 @@ export default function App() {
       name: d.name,
       title: '',
       subtitle: '',
+      topColor: d.topColor,
+      topIsLight: false, // demo gradients are saturated → dark icons don't fit; use white icons
+      bottomColor: d.bottomColor,
     })))
   }, [])
 
@@ -1085,13 +1849,25 @@ export default function App() {
   const handleFiles = useCallback((files) => {
     Array.from(files).filter(f => f.type.startsWith('image/')).forEach(file => {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
+        const src = e.target.result
+        // Sample top + bottom edge colors for status-bar eraser and smart fill
+        let topInfo = null, bottomInfo = null
+        try {
+          [topInfo, bottomInfo] = await Promise.all([
+            sampleImageTop(src),
+            sampleImageBottom(src),
+          ])
+        } catch {}
         setImages(prev => [...prev, {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          src: e.target.result,
+          src,
           name: file.name.replace(/\.[^.]+$/, ''),
-          title: '',      // per-image text (used when textMode='individual')
+          title: '',
           subtitle: '',
+          topColor: topInfo?.color,       // top-left 20x20 patch color (status bar eraser)
+          topIsLight: topInfo?.isLight,
+          bottomColor: bottomInfo?.color, // center-bottom 20x20 patch color (smart fill)
         }])
       }
       reader.readAsDataURL(file)
@@ -1317,45 +2093,58 @@ export default function App() {
             </div>
           ) : (
             <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} className="min-h-full flex flex-col gap-5">
-              {/* ── Enlarged Preview ──────────────────────────── */}
+              {/* ── Enlarged Preview — AutoFitScaler keeps the whole card on screen ── */}
               {selectedId && images.find(i => i.id === selectedId) && (() => {
                 const sel = images.find(i => i.id === selectedId)
+                const simpleCardW = (device.frameWidth + padding * 2) + 2
+                const _innerW = device.frameWidth - 2 * device.bezel
+                const simpleCardH = (_innerW * (device.screenH / device.screenW) + 2 * device.bezel) + padding * 2 + 4
+                const cardW = tab === 'simple' ? simpleCardW : 360
+                const cardH = tab === 'simple' ? simpleCardH : (previewExportH || 780)
                 return (
-                  <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center gap-2 sticky top-0 z-10 shadow-sm max-h-[60vh] overflow-auto">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 shadow-sm">
                     <div className="flex items-center justify-between w-full shrink-0">
                       <span className="text-[12px] font-semibold text-gray-600">{sel.name}</span>
                       <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 px-2 py-1 text-[11px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                         <Minimize2 className="w-3 h-3" />{t.collapse}
                       </button>
                     </div>
-                    <div className="flex items-center justify-center" style={{ ...previewBgHint, borderRadius: 12, overflow: 'hidden' }}>
+                    <AutoFitScaler cardW={cardW} cardH={cardH} maxVh={55} style={{ ...previewBgHint, borderRadius: 12 }}>
                       {tab === 'simple' ? (
-                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.8} />
+                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeId={selectedShapeId} onSelectShape={setSelectedShapeId} onMoveShape={moveShape} interactiveShapes />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={0.9} fontFamily={asFont.family} subTextColor={asSubColor} />
+                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeId={selectedShapeId} onSelectShape={setSelectedShapeId} onMoveShape={moveShape} interactiveShapes />
                       )}
-                    </div>
+                    </AutoFitScaler>
                   </div>
                 )
               })()}
 
-              {/* ── Before/After Preview (Simple tab only) ─── */}
-              {tab === 'simple' && beforeAfterMode && images.length >= 2 && (
+              {/* ── Before/After Preview (Simple tab only) — PreviewScaler ─── */}
+              {tab === 'simple' && beforeAfterMode && images.length >= 2 && (() => {
+                const simpleCardW = (device.frameWidth + padding * 2) + 2
+                const _innerW = device.frameWidth - 2 * device.bezel; const simpleCardH = (_innerW * (device.screenH / device.screenW) + 2 * device.bezel) + padding * 2 + 4
+                return (
                 <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col items-center gap-2 shadow-sm">
                   <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider self-start">Before / After</p>
                   <div className="flex items-center justify-center gap-4 flex-wrap">
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-[10px] font-bold text-gray-400">BEFORE</span>
-                      <SimpleMockupCard src={images[0].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.6} />
+                      <PreviewScaler width={simpleCardW} height={simpleCardH} scale={0.6}>
+                        <SimpleMockupCard src={images[0].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} topColor={images[0].topColor} topIsLight={images[0].topIsLight} bottomColor={images[0].bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} />
+                      </PreviewScaler>
                     </div>
                     <div className="text-[24px] text-gray-300">→</div>
                     <div className="flex flex-col items-center gap-1">
                       <span className="text-[10px] font-bold text-violet-500">AFTER</span>
-                      <SimpleMockupCard src={images[1].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={0.6} />
+                      <PreviewScaler width={simpleCardW} height={simpleCardH} scale={0.6}>
+                        <SimpleMockupCard src={images[1].src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} topColor={images[1].topColor} topIsLight={images[1].topIsLight} bottomColor={images[1].bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} />
+                      </PreviewScaler>
                     </div>
                   </div>
                 </div>
-              )}
+                )
+              })()}
 
               {/* ── Thumbnail Grid ───────────────────────────── */}
               <div className="grid gap-5" style={{
@@ -1363,31 +2152,44 @@ export default function App() {
                   tab === 'appstore' ? '220px' : device.screenW > device.screenH ? '320px' : device.type === 'browser' ? '240px' : '180px'
                 }, 1fr))`,
               }}>
-                {images.map((img) => (
+                {images.map((img) => {
+                  // Fixed-pixel card dimensions — SAME DOM is used for preview + export
+                  const simpleCardW = (device.frameWidth + padding * 2) + 2  // +2 buffer
+                  const _innerW = device.frameWidth - 2 * device.bezel; const simpleCardH = (_innerW * (device.screenH / device.screenW) + 2 * device.bezel) + padding * 2 + 4
+                  const fmtFixedW = 360
+                  const fmtFixedH = previewExportH || 780
+                  return (
                   <div key={img.id} className="group relative flex flex-col items-center">
-                    {/* Hidden full-res export targets */}
-                    <div style={{ position: 'absolute', left: -99999, top: 0, pointerEvents: 'none', overflow: 'visible' }}>
-                      {tab === 'simple' ? (
-                        <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} />
-                      ) : (
-                        /* Render one hidden card per active format — each has correct aspect ratio */
-                        STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
+                    {tab === 'appstore' && (
+                      /* Hidden full-res export targets — required for export since thumb uses DIFFERENT format */
+                      <div style={{ position: 'absolute', left: -99999, top: 0, pointerEvents: 'none', overflow: 'visible' }}>
+                        {STORE_PRESETS.flatMap(s => s.formats).filter(f => activeFormats.includes(f.id)).map(fmt => {
                           const fmtDevice = DEVICES.find(d => d.id === fmt.deviceId) || device
-                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} />
-                        })
-                      )}
-                    </div>
+                          return <AppStoreMockupCard key={fmt.id} src={img.src} device={fmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={360 * (fmt.h / fmt.w)} cardRef={el => { cardRefs.current[`${img.id}-${fmt.id}`] = el }} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} topColor={img.topColor} topIsLight={img.topIsLight} bottomColor={img.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} />
+                        })}
+                      </div>
+                    )}
 
-                    {/* Visible thumb — click to enlarge */}
+                    {/*
+                      VISIBLE THUMB — PreviewScaler architecture:
+                      The card renders at FIXED pixels (scale=1). A CSS transform on the
+                      wrapper visually shrinks it to thumbnail size. For Simple tab, the
+                      SAME scaled element is the export source (cardRef attached), so preview
+                      and export are guaranteed pixel-identical.
+                    */}
                     <div
                       onClick={() => setSelectedId(selectedId === img.id ? null : img.id)}
-                      className={`rounded-xl overflow-hidden w-full flex items-center justify-center p-2 cursor-pointer transition-all ${selectedId === img.id ? 'ring-2 ring-violet-500 ring-offset-2' : 'hover:ring-1 hover:ring-gray-300'}`}
-                      style={{ ...previewBgHint, minHeight: 140 }}
+                      className={`rounded-xl w-full flex items-center justify-center p-2 cursor-pointer transition-all ${selectedId === img.id ? 'ring-2 ring-violet-500 ring-offset-2' : 'hover:ring-1 hover:ring-gray-300'}`}
+                      style={{ ...previewBgHint, minHeight: 140, overflow: 'hidden' }}
                     >
                       {tab === 'simple' ? (
-                        <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={thumbScale} />
+                        <PreviewScaler width={simpleCardW} height={simpleCardH} scale={thumbScale}>
+                          <SimpleMockupCard src={img.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} cardRef={el => { cardRefs.current[img.id] = el }} scale={1} topColor={img.topColor} topIsLight={img.topIsLight} bottomColor={img.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} />
+                        </PreviewScaler>
                       ) : (
-                        <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={thumbScale} fontFamily={asFont.family} subTextColor={asSubColor} />
+                        <PreviewScaler width={fmtFixedW} height={fmtFixedH} scale={thumbScale}>
+                          <AppStoreMockupCard src={img.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(img)} subtitle={getSubtitle(img)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} topColor={img.topColor} topIsLight={img.topIsLight} bottomColor={img.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} />
+                        </PreviewScaler>
                       )}
                     </div>
 
@@ -1397,7 +2199,8 @@ export default function App() {
                     </div>
                     <p className="text-[11px] text-gray-400 mt-2 truncate max-w-full px-2 font-medium">{img.name}</p>
                   </div>
-                ))}
+                  )
+                })}
 
                 <div onClick={() => fileInputRef.current?.click()} className="rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-300 cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[160px] transition-colors hover:bg-gray-50">
                   <ImagePlus className="w-5 h-5 text-gray-300" /><span className="text-[11px] text-gray-400 font-medium">{t.add}</span>
@@ -1437,7 +2240,7 @@ export default function App() {
               </div>
             </Section>
 
-            {/* ── SHARED: Frame Color (phone only) ──────────── */}
+            {/* ── SHARED: Frame Color (phone/tablet) ─────────── */}
             {(device.type === 'iphone' || device.type === 'samsung' || device.type === 'ipad' || device.type === 'android-tab') && (
               <Section title={t.frameColor} icon={Sun}>
                 <div className="flex gap-2">
@@ -1448,6 +2251,84 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+              </Section>
+            )}
+
+            {/* ── SHARED: Clean Status Bar 3-mode selector (per-device) ──── */}
+            {(device.type === 'iphone' || device.type === 'samsung' || device.type === 'ipad' || device.type === 'android-tab') && device.statusBarH && (
+              <Section title={lang === 'ko' ? '상태바 9:41' : lang === 'zh' ? '状态栏 9:41' : 'Status Bar 9:41'} icon={Smartphone}>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'off',   label: lang === 'ko' ? 'OFF'    : 'Off',    hint: lang === 'ko' ? '원본 유지'           : 'Original' },
+                    { id: 'show',  label: lang === 'ko' ? '표시'   : 'Show',   hint: lang === 'ko' ? '안가리고 띄우기'     : 'Overlay only' },
+                    { id: 'cover', label: lang === 'ko' ? '가리기' : 'Cover',  hint: lang === 'ko' ? '원본 가리고 띄우기' : 'Mask + overlay' },
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setCleanStatusBarMode(opt.id)}
+                      title={opt.hint}
+                      className={`py-2 text-[10px] font-bold rounded-lg transition-all ${cleanStatusBarMode === opt.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1.5 leading-snug">
+                  {lang === 'ko'
+                    ? cleanStatusBarMode === 'show'  ? '원본 상단 위에 9:41 표시 (원본에 상태바가 없을 때)'
+                    : cleanStatusBarMode === 'cover' ? '원본 상단을 가리고 9:41 표시 (시뮬레이터 상태바 교체)'
+                    : '원본 스크린샷 그대로 렌더링'
+                    : cleanStatusBarMode === 'show'  ? 'Overlay 9:41 on top (if image has no status bar)'
+                    : cleanStatusBarMode === 'cover' ? 'Mask original + overlay 9:41 (hide simulator UI)'
+                    : 'Show original screenshot as-is'}
+                </p>
+
+                {/* Cover Color palette — only visible when Cover mode is active */}
+                {cleanStatusBarMode === 'cover' && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                      {lang === 'ko' ? '커버 컬러' : lang === 'zh' ? '覆盖颜色' : 'Cover Color'}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Auto — samples image top pixel */}
+                      <button
+                        onClick={() => setCoverColor(null)}
+                        title={lang === 'ko' ? '이미지 상단 색상 자동 감지' : 'Auto-detect from image'}
+                        className={`px-2.5 py-1.5 text-[10px] font-bold rounded-lg transition-all ${coverColor === null ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>
+                        {lang === 'ko' ? '자동' : 'Auto'}
+                      </button>
+                      {/* Preset colors */}
+                      {[
+                        { color: '#ffffff', label: 'White' },
+                        { color: '#000000', label: 'Black' },
+                        { color: '#f5f5f7', label: 'Light' },
+                        { color: '#1d1d1f', label: 'Dark' },
+                        { color: '#6366f1', label: 'Indigo' },
+                        { color: '#ec4899', label: 'Pink' },
+                        { color: '#10b981', label: 'Emerald' },
+                        { color: '#f59e0b', label: 'Amber' },
+                      ].map(({ color, label }) => (
+                        <button
+                          key={color}
+                          onClick={() => setCoverColor(color)}
+                          title={label}
+                          className={`w-7 h-7 rounded-lg border transition-all ${coverColor === color ? 'ring-2 ring-gray-900 ring-offset-1 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                      {/* Custom color picker */}
+                      <label className="relative w-7 h-7 rounded-lg border border-gray-200 overflow-hidden cursor-pointer flex items-center justify-center hover:scale-105 transition-all" title={lang === 'ko' ? '직접 선택' : 'Custom'}>
+                        <input
+                          type="color"
+                          value={coverColor && coverColor.startsWith('#') ? coverColor : '#888888'}
+                          onChange={e => setCoverColor(e.target.value)}
+                          className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                        />
+                        <div className="w-full h-full" style={{ background: 'conic-gradient(from 180deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)' }} />
+                      </label>
+                    </div>
+                  </div>
+                )}
               </Section>
             )}
 
@@ -1798,6 +2679,124 @@ export default function App() {
                 </Section>
               </>
             )}
+
+            {/* ── SHARED: Background Shapes Decorations ────────── */}
+            <Section title={lang === 'ko' ? '배경 꾸미기' : lang === 'zh' ? '背景装饰' : 'Background Shapes'} icon={Layers}>
+              {/* Template dropdown */}
+              <select
+                defaultValue=""
+                onChange={e => { if (e.target.value) { applyBgTemplate(e.target.value); e.target.value = '' } }}
+                className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
+              >
+                <option value="">{lang === 'ko' ? '📋 템플릿 선택...' : 'Choose template...'}</option>
+                {Object.entries(BG_TEMPLATES).map(([id, tpl]) => (
+                  <option key={id} value={id}>{tpl.label}</option>
+                ))}
+              </select>
+
+              {/* Add shape dropdown */}
+              <div className="flex gap-1.5 mb-2">
+                <select
+                  defaultValue=""
+                  onChange={e => { if (e.target.value) { addShape(e.target.value); e.target.value = '' } }}
+                  className="flex-1 text-[11px] bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                >
+                  <option value="">{lang === 'ko' ? '+ 도형 추가...' : '+ Add shape...'}</option>
+                  {SHAPE_TYPES.map(t => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </select>
+                {backgroundShapes.length > 0 && (
+                  <button onClick={() => { setBackgroundShapes([]); setSelectedShapeId(null) }} className="px-2 py-2 text-[10px] font-semibold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg" title="Clear all">✕</button>
+                )}
+              </div>
+
+              {/* Shape list */}
+              {backgroundShapes.length > 0 && (
+                <div className="flex flex-col gap-1 mb-2 max-h-[140px] overflow-y-auto">
+                  {backgroundShapes.map((s, i) => (
+                    <div key={s.id}
+                      onClick={() => setSelectedShapeId(s.id)}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all ${selectedShapeId === s.id ? 'bg-violet-100 ring-1 ring-violet-400' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                      <div style={{ width: 14, height: 14, borderRadius: s.type.includes('circle') || s.type === 'ring' || s.type === 'soft-blob' || s.type === 'donut' || s.type === 'gradient-orb' ? '50%' : 3, background: s.color, flexShrink: 0 }} />
+                      <span className="text-[11px] font-semibold text-gray-600 flex-1 truncate">
+                        {SHAPE_TYPES.find(st => st.id === s.type)?.emoji || '●'} #{i + 1}
+                      </span>
+                      <button onClick={(e) => { e.stopPropagation(); removeShape(s.id) }} className="text-gray-400 hover:text-red-500 text-[12px]">✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Selected shape editor */}
+              {selectedShape && (
+                <div className="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-2">
+                  {/* Type switcher */}
+                  <select
+                    value={selectedShape.type}
+                    onChange={e => updateShape(selectedShape.id, { type: e.target.value })}
+                    className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                  >
+                    {SHAPE_TYPES.map(t => (
+                      <option key={t.id} value={t.id}>{t.label}</option>
+                    ))}
+                  </select>
+                  {/* Color */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8">색상</label>
+                    <input type="color" value={selectedShape.color} onChange={e => updateShape(selectedShape.id, { color: e.target.value })} className="w-8 h-7 rounded border border-gray-200 cursor-pointer p-0.5" />
+                    <input type="text" value={selectedShape.color} onChange={e => updateShape(selectedShape.id, { color: e.target.value })} className="flex-1 text-[10px] font-mono bg-gray-50 border border-gray-200 rounded px-2 py-1" />
+                  </div>
+                  {selectedShape.type === 'gradient-orb' && (
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] text-gray-400 w-8">색2</label>
+                      <input type="color" value={selectedShape.color2 || '#ffffff'} onChange={e => updateShape(selectedShape.id, { color2: e.target.value })} className="w-8 h-7 rounded border border-gray-200 cursor-pointer p-0.5" />
+                      <input type="text" value={selectedShape.color2 || ''} onChange={e => updateShape(selectedShape.id, { color2: e.target.value })} className="flex-1 text-[10px] font-mono bg-gray-50 border border-gray-200 rounded px-2 py-1" />
+                    </div>
+                  )}
+                  {/* Size */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">크기</label>
+                    <input type="range" min={20} max={800} value={selectedShape.size} onChange={e => updateShape(selectedShape.id, { size: +e.target.value })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{selectedShape.size}</span>
+                  </div>
+                  {/* X */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">X</label>
+                    <input type="range" min={-50} max={150} value={selectedShape.x} onChange={e => updateShape(selectedShape.id, { x: +e.target.value })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{Math.round(selectedShape.x)}%</span>
+                  </div>
+                  {/* Y */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">Y</label>
+                    <input type="range" min={-50} max={150} value={selectedShape.y} onChange={e => updateShape(selectedShape.id, { y: +e.target.value })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{Math.round(selectedShape.y)}%</span>
+                  </div>
+                  {/* Opacity */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">투명도</label>
+                    <input type="range" min={0} max={100} value={Math.round(selectedShape.opacity * 100)} onChange={e => updateShape(selectedShape.id, { opacity: +e.target.value / 100 })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{Math.round(selectedShape.opacity * 100)}%</span>
+                  </div>
+                  {/* Blur */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">블러</label>
+                    <input type="range" min={0} max={100} value={selectedShape.blur || 0} onChange={e => updateShape(selectedShape.id, { blur: +e.target.value })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{selectedShape.blur || 0}</span>
+                  </div>
+                  {/* Rotate */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-gray-400 w-8 shrink-0">회전</label>
+                    <input type="range" min={0} max={360} value={selectedShape.rotate || 0} onChange={e => updateShape(selectedShape.id, { rotate: +e.target.value })} className="flex-1 accent-gray-900 h-1" />
+                    <span className="text-[10px] text-gray-500 font-mono w-10 text-right">{selectedShape.rotate || 0}°</span>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-[10px] text-gray-400 mt-2 leading-snug">
+                {lang === 'ko' ? '💡 확대 미리보기에서 도형을 드래그해서 이동할 수 있습니다' : 'Drag shapes in the enlarged preview to move them'}
+              </p>
+            </Section>
 
             {/* ── SHARED: Shadow ────────────────────────────── */}
             <Section title={t.shadow} icon={Layers}>
