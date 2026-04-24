@@ -15,3 +15,63 @@ h1, h2, h3, h4, h5, h6 {
 p, span, div, button, input, label {
   line-height: 1.6;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Toss-style Custom Scrollbar — thin, subtle, modern
+   ═══════════════════════════════════════════════════════════════ */
+aside,
+.custom-scroll,
+.overflow-y-auto,
+.overflow-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+aside::-webkit-scrollbar,
+.custom-scroll::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+aside::-webkit-scrollbar-track,
+.custom-scroll::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb,
+.custom-scroll::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+aside::-webkit-scrollbar-thumb:hover,
+.custom-scroll::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Toss-style button press feedback — subtle scale on active
+   ═══════════════════════════════════════════════════════════════ */
+button {
+  transition: transform 0.12s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Magnetic Snap guide — vivid Toss Blue
+   ═══════════════════════════════════════════════════════════════ */
+.snap-guide {
+  background: #3182F6;
+  box-shadow: 0 0 4px rgba(49, 130, 246, 0.45);
+}

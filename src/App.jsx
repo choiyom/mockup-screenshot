@@ -955,7 +955,7 @@ function Device3D({ src, device, shadow, scale = 1, frameColor, depth = 8 }) {
 /* ═══════════════════════════════════════════════════════════════
    SIMPLE MOCKUP CARD  (Tab 1)
    ═══════════════════════════════════════════════════════════════ */
-function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeId = null, onSelectShape, onMoveShape, interactiveShapes = false }) {
+function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1, frameColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeIds = [], onSelectShape, onMoveShape, onResizeShape, interactiveShapes = false }) {
   const bgStyle = bg.isTransparent ? { background: 'transparent' } : bg.value.includes('gradient') ? { background: bg.value } : { backgroundColor: bg.value }
   return (
     <div ref={cardRef} style={{ ...bgStyle, padding: padding * scale, borderRadius: 16 * scale, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
@@ -963,9 +963,9 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
       {backgroundShapes.length > 0 && (
         <BackgroundCanvas
           shapes={backgroundShapes}
-          selectedId={selectedShapeId}
+          selectedIds={selectedShapeIds}
           onSelect={onSelectShape}
-          onShapeMove={onMoveShape}
+          onShapeMove={onMoveShape} onShapeResize={onResizeShape}
           interactive={interactiveShapes}
           canvasScale={scale}
           borderRadius={16 * scale}
@@ -981,7 +981,7 @@ function SimpleMockupCard({ src, device, bg, padding, shadow, cardRef, scale = 1
 /* ═══════════════════════════════════════════════════════════════
    APP STORE MOCKUP CARD  (Tab 2) — 9:19.5 fixed canvas
    ═══════════════════════════════════════════════════════════════ */
-function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily, subTextColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeId = null, onSelectShape, onMoveShape, interactiveShapes = false }) {
+function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, cardRef, scale = 1, frameColor, textColor: customTextColor, titleSize = 18, subSize = 11, textTop = 22, gap = 0, exportW, exportH, fontFamily, subTextColor, topColor, topIsLight, bottomColor, coverColor, cleanStatusBar, backgroundShapes = [], selectedShapeIds = [], onSelectShape, onMoveShape, onResizeShape, interactiveShapes = false }) {
   const canvasW = exportW ? exportW * scale : 360 * scale
   const canvasH = exportH ? exportH * scale : canvasW * (2240 / 1260)
   const autoTextColor = isLightColor(bgColor) ? '#111' : '#fff'
@@ -1007,9 +1007,9 @@ function AppStoreMockupCard({ src, device, bgColor, title, subtitle, shadow, car
       {backgroundShapes.length > 0 && (
         <BackgroundCanvas
           shapes={backgroundShapes}
-          selectedId={selectedShapeId}
+          selectedIds={selectedShapeIds}
           onSelect={onSelectShape}
-          onShapeMove={onMoveShape}
+          onShapeMove={onMoveShape} onShapeResize={onResizeShape}
           interactive={interactiveShapes}
           canvasScale={scale}
           borderRadius={16 * scale}
@@ -1374,8 +1374,9 @@ function AutoFitScaler({ cardW, cardH, maxVh = 55, className, style, children })
   )
 }
 
-function Shape({ s, selected, onMouseDown, onClick, canvasScale = 1 }) {
+function Shape({ s, selected, onMouseDown, onClick, onResizeStart, canvasScale = 1 }) {
   const sz = s.size * canvasScale
+  const isLocked = s.locked
   const commonStyle = {
     position: 'absolute',
     top: `${s.y}%`, left: `${s.x}%`,
@@ -1383,13 +1384,17 @@ function Shape({ s, selected, onMouseDown, onClick, canvasScale = 1 }) {
     transform: `translate(-50%, -50%) rotate(${s.rotate || 0}deg)`,
     opacity: s.opacity,
     filter: s.blur ? `blur(${s.blur * canvasScale}px)` : undefined,
-    cursor: onMouseDown ? 'move' : 'default',
-    outline: selected ? '2px dashed rgb(139,92,246)' : 'none',
+    cursor: onMouseDown ? (isLocked ? 'not-allowed' : 'move') : 'default',
+    outline: selected ? `2px dashed ${isLocked ? 'rgb(244,63,94)' : 'rgb(139,92,246)'}` : 'none',
     outlineOffset: 4 * canvasScale,
     pointerEvents: onMouseDown ? 'auto' : 'none',
   }
-  const onDownStop = (e) => { e.stopPropagation(); onMouseDown && onMouseDown(e, s.id) }
-  const onClickStop = (e) => { e.stopPropagation(); onClick && onClick(s.id) }
+  const onDownStop = (e) => {
+    if (isLocked) { e.stopPropagation(); return }
+    e.stopPropagation()
+    onMouseDown && onMouseDown(e, s.id)
+  }
+  const onClickStop = (e) => { e.stopPropagation(); onClick && onClick(s.id, e) }
 
   switch (s.type) {
     case 'ring':
@@ -1472,6 +1477,12 @@ function Shape({ s, selected, onMouseDown, onClick, canvasScale = 1 }) {
           background: `radial-gradient(circle at 30% 30%, ${s.color}, ${s.color2 || s.color})`,
         }} />
       )
+    case 'image':
+      return (
+        <div onMouseDown={onDownStop} onClick={onClickStop} style={commonStyle}>
+          <img src={s.imageSrc} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', pointerEvents: 'none' }} />
+        </div>
+      )
     case 'circle':
     default:
       return (
@@ -1484,29 +1495,143 @@ function Shape({ s, selected, onMouseDown, onClick, canvasScale = 1 }) {
   }
 }
 
+/* Resize handles overlay — shown on selected shape in interactive mode */
+function ResizeHandles({ s, canvasScale, onResizeStart, locked }) {
+  if (locked) return null
+  const sz = s.size * canvasScale
+  const handleSize = 10
+  const handles = [
+    { key: 'tl', x: -sz/2 - handleSize/2, y: -sz/2 - handleSize/2, cursor: 'nwse-resize', corner: 'tl' },
+    { key: 'tr', x:  sz/2 - handleSize/2, y: -sz/2 - handleSize/2, cursor: 'nesw-resize', corner: 'tr' },
+    { key: 'bl', x: -sz/2 - handleSize/2, y:  sz/2 - handleSize/2, cursor: 'nesw-resize', corner: 'bl' },
+    { key: 'br', x:  sz/2 - handleSize/2, y:  sz/2 - handleSize/2, cursor: 'nwse-resize', corner: 'br' },
+  ]
+  return (
+    <div style={{
+      position: 'absolute',
+      top: `${s.y}%`, left: `${s.x}%`,
+      width: 0, height: 0,
+      zIndex: 9999,
+      pointerEvents: 'none',
+    }}>
+      {handles.map(h => (
+        <div
+          key={h.key}
+          onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, h.corner) }}
+          style={{
+            position: 'absolute',
+            width: handleSize, height: handleSize,
+            left: h.x, top: h.y,
+            background: 'white',
+            border: '2px solid rgb(139,92,246)',
+            borderRadius: 2,
+            cursor: h.cursor,
+            pointerEvents: 'auto',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 /* ═══════════════════════════════════════════════════════════════
    BACKGROUND CANVAS — overflow-clipped container for shapes.
-   Supports drag-to-move via native mouse events.
+   Supports drag-to-move, multi-select (H), snap-to-grid (J),
+   smart guide lines, and resize handles (G).
    ═══════════════════════════════════════════════════════════════ */
-function BackgroundCanvas({ shapes = [], bgColor, selectedId, onSelect, onShapeMove, canvasScale = 1, interactive = false, borderRadius = 0 }) {
+function BackgroundCanvas({ shapes = [], bgColor, selectedIds = [], onSelect, onShapeMove, onShapeResize, canvasScale = 1, interactive = false, borderRadius = 0, snapEnabled = true }) {
   const canvasRef = useRef(null)
+  const [guides, setGuides] = useState({ vx: null, hy: null })  // smart guide lines (in %)
 
+  // Drag move handler — supports multi-select (group move) + snap + guides
   const handleMouseDown = (e, id) => {
     if (!interactive || !canvasRef.current) return
+    const shape = shapes.find(s => s.id === id)
+    if (!shape || shape.locked) return
+
+    // If clicked shape isn't part of current selection, select ONLY this one
+    const ids = selectedIds.includes(id) ? selectedIds : [id]
+    if (!selectedIds.includes(id)) onSelect && onSelect(id, e)
+
     const rect = canvasRef.current.getBoundingClientRect()
     const startX = e.clientX
     const startY = e.clientY
-    const shape = shapes.find(s => s.id === id)
-    if (!shape) return
-    const startXpct = shape.x
-    const startYpct = shape.y
+    const starts = {}
+    ids.forEach(i => {
+      const s = shapes.find(sh => sh.id === i)
+      if (s) starts[i] = { x: s.x, y: s.y }
+    })
 
     const onMove = (ev) => {
       const dx = ev.clientX - startX
       const dy = ev.clientY - startY
-      const xPct = startXpct + (dx / rect.width) * 100
-      const yPct = startYpct + (dy / rect.height) * 100
-      onShapeMove && onShapeMove(id, { x: xPct, y: yPct })
+      const dxPct = (dx / rect.width) * 100
+      const dyPct = (dy / rect.height) * 100
+
+      ids.forEach(i => {
+        const st = starts[i]
+        if (!st) return
+        let newX = st.x + dxPct
+        let newY = st.y + dyPct
+
+        // MAGNETIC SNAP — Toss-style, 6px threshold in actual pixels (scale-invariant)
+        if (snapEnabled) {
+          const thresholdX = 6 / rect.width * 100   // 6px as % of canvas width
+          const thresholdY = 6 / rect.height * 100  // 6px as % of canvas height
+          let vx = null, hy = null
+
+          // Priority 1: Canvas center (50%) — the "magnetic center"
+          if (Math.abs(newX - 50) < thresholdX) { newX = 50; vx = 50 }
+          if (Math.abs(newY - 50) < thresholdY) { newY = 50; hy = 50 }
+
+          // Priority 2: Canvas edges (0%, 100%)
+          for (const edge of [0, 100]) {
+            if (vx == null && Math.abs(newX - edge) < thresholdX) { newX = edge; vx = edge }
+            if (hy == null && Math.abs(newY - edge) < thresholdY) { newY = edge; hy = edge }
+          }
+
+          // Priority 3: Other shape centers (alignment guides)
+          for (const other of shapes) {
+            if (other.id === i) continue
+            if (vx == null && Math.abs(newX - other.x) < thresholdX) { newX = other.x; vx = other.x }
+            if (hy == null && Math.abs(newY - other.y) < thresholdY) { newY = other.y; hy = other.y }
+          }
+
+          // Update guide lines — only for single-shape drag
+          if (ids.length === 1) setGuides({ vx, hy })
+        }
+
+        onShapeMove && onShapeMove(i, { x: newX, y: newY })
+      })
+    }
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      setGuides({ vx: null, hy: null })
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  // G: Resize handler
+  const handleResizeStart = (e, id, corner) => {
+    if (!interactive || !canvasRef.current) return
+    const shape = shapes.find(s => s.id === id)
+    if (!shape || shape.locked) return
+    const rect = canvasRef.current.getBoundingClientRect()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startSize = shape.size
+
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX
+      const dy = ev.clientY - startY
+      // Use diagonal distance for simplicity
+      const diag = corner.includes('r') ? dx : -dx
+      const diagY = corner.includes('b') ? dy : -dy
+      const delta = Math.max(diag, diagY) / canvasScale
+      const newSize = Math.max(20, Math.min(800, startSize + delta))
+      onShapeResize && onShapeResize(id, { size: newSize })
     }
     const onUp = () => {
       window.removeEventListener('mousemove', onMove)
@@ -1514,6 +1639,13 @@ function BackgroundCanvas({ shapes = [], bgColor, selectedId, onSelect, onShapeM
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
+  }
+
+  // Shape click — H: Shift+click adds/removes from selection, plain click = single
+  const handleShapeClick = (id, e) => {
+    if (!onSelect) return
+    if (e && e.shiftKey) onSelect(id, e)  // caller handles toggle
+    else onSelect(id, e)
   }
 
   return (
@@ -1533,12 +1665,27 @@ function BackgroundCanvas({ shapes = [], bgColor, selectedId, onSelect, onShapeM
         <Shape
           key={s.id}
           s={s}
-          selected={interactive && selectedId === s.id}
+          selected={interactive && selectedIds.includes(s.id)}
           canvasScale={canvasScale}
           onMouseDown={interactive ? handleMouseDown : undefined}
-          onClick={interactive ? onSelect : undefined}
+          onClick={interactive ? handleShapeClick : undefined}
         />
       ))}
+
+      {/* G: Resize handles for single selection */}
+      {interactive && selectedIds.length === 1 && (() => {
+        const s = shapes.find(sh => sh.id === selectedIds[0])
+        if (!s) return null
+        return <ResizeHandles s={s} canvasScale={canvasScale} locked={s.locked} onResizeStart={(e, corner) => handleResizeStart(e, s.id, corner)} />
+      })()}
+
+      {/* Magnetic snap guide lines — Toss Blue with glow */}
+      {interactive && guides.vx != null && (
+        <div className="snap-guide" style={{ position: 'absolute', top: 0, bottom: 0, left: `${guides.vx}%`, width: 1, pointerEvents: 'none', zIndex: 9998 }} />
+      )}
+      {interactive && guides.hy != null && (
+        <div className="snap-guide" style={{ position: 'absolute', left: 0, right: 0, top: `${guides.hy}%`, height: 1, pointerEvents: 'none', zIndex: 9998 }} />
+      )}
     </div>
   )
 }
@@ -1592,26 +1739,145 @@ export default function App() {
 
   // Background shapes — decorative elements BEHIND the device frame
   const [backgroundShapes, setBackgroundShapes] = useState([])
-  const [selectedShapeId, setSelectedShapeId] = useState(null)
+  // Multi-select (H): Set of shape IDs. selectedShapeId = single (H's first)
+  const [selectedShapeIds, setSelectedShapeIds] = useState([])
+  const selectedShapeId = selectedShapeIds[0] || null
   const selectedShape = backgroundShapes.find(s => s.id === selectedShapeId)
+  const setSelectedShapeIdSingle = (id) => setSelectedShapeIds(id ? [id] : [])
+
+  // Shape CRUD helpers
   const updateShape = (id, updates) => setBackgroundShapes(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+  const updateMany = (ids, fn) => setBackgroundShapes(prev => prev.map(s => ids.includes(s.id) ? { ...s, ...fn(s) } : s))
   const moveShape = (id, { x, y }) => updateShape(id, { x, y })
   const addShape = (type = 'circle') => {
     const s = makeShape({ type, x: 50, y: 50, size: 240 })
     setBackgroundShapes(prev => [...prev, s])
-    setSelectedShapeId(s.id)
+    setSelectedShapeIds([s.id])
   }
   const removeShape = (id) => {
     setBackgroundShapes(prev => prev.filter(s => s.id !== id))
-    if (selectedShapeId === id) setSelectedShapeId(null)
+    setSelectedShapeIds(prev => prev.filter(x => x !== id))
   }
   const applyBgTemplate = (tplId) => {
-    const tpl = BG_TEMPLATES[tplId]
+    const tpl = BG_TEMPLATES[tplId] || userTemplates.find(t => t.id === tplId)
     if (!tpl) return
-    // Clone with fresh ids to avoid key collisions
     setBackgroundShapes(tpl.shapes.map(s => ({ ...s, id: `bg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` })))
-    setSelectedShapeId(null)
+    setSelectedShapeIds([])
   }
+
+  // B: Duplicate
+  const duplicateShape = (id) => {
+    const orig = backgroundShapes.find(s => s.id === id)
+    if (!orig) return
+    const clone = makeShape({ ...orig, x: Math.min(150, orig.x + 5), y: Math.min(150, orig.y + 5) })
+    setBackgroundShapes(prev => [...prev, clone])
+    setSelectedShapeIds([clone.id])
+  }
+
+  // A: Layer order — index in array determines draw order (last = on top)
+  const moveLayer = (id, dir) => {
+    // dir: 'front' | 'back' | 'up' | 'down'
+    setBackgroundShapes(prev => {
+      const i = prev.findIndex(s => s.id === id)
+      if (i < 0) return prev
+      const arr = [...prev]
+      const [s] = arr.splice(i, 1)
+      if (dir === 'front') arr.push(s)
+      else if (dir === 'back') arr.unshift(s)
+      else if (dir === 'up') arr.splice(Math.min(arr.length, i + 1), 0, s)
+      else if (dir === 'down') arr.splice(Math.max(0, i - 1), 0, s)
+      return arr
+    })
+  }
+
+  // I: Toggle lock
+  const toggleLock = (id) => updateShape(id, { locked: !(backgroundShapes.find(s => s.id === id)?.locked) })
+
+  // F: Align helpers — align selected shape(s) to canvas
+  const alignShape = (where) => {
+    const ids = selectedShapeIds.length ? selectedShapeIds : (selectedShapeId ? [selectedShapeId] : [])
+    if (!ids.length) return
+    const map = { 'tl': { x: 0, y: 0 }, 'tc': { x: 50, y: 0 }, 'tr': { x: 100, y: 0 },
+                  'ml': { x: 0, y: 50 }, 'mc': { x: 50, y: 50 }, 'mr': { x: 100, y: 50 },
+                  'bl': { x: 0, y: 100 }, 'bc': { x: 50, y: 100 }, 'br': { x: 100, y: 100 } }
+    const target = map[where]
+    if (!target) return
+    updateMany(ids, () => target)
+  }
+
+  // E: User templates (saved to localStorage)
+  const [userTemplates, setUserTemplates] = useState([])
+  useEffect(() => {
+    try { const raw = localStorage.getItem('mockup-user-bg-templates'); if (raw) setUserTemplates(JSON.parse(raw)) } catch {}
+  }, [])
+  const saveUserTemplate = () => {
+    if (backgroundShapes.length === 0) { alert('도형이 없습니다.'); return }
+    const name = prompt('템플릿 이름:', `My Template ${userTemplates.length + 1}`)
+    if (!name) return
+    const tpl = { id: `user-${Date.now()}`, label: `⭐ ${name}`, shapes: backgroundShapes }
+    const next = [...userTemplates, tpl]
+    setUserTemplates(next)
+    try { localStorage.setItem('mockup-user-bg-templates', JSON.stringify(next)) } catch {}
+  }
+  const deleteUserTemplate = (id) => {
+    const next = userTemplates.filter(t => t.id !== id)
+    setUserTemplates(next)
+    try { localStorage.setItem('mockup-user-bg-templates', JSON.stringify(next)) } catch {}
+  }
+
+  // D: Upload custom image/SVG
+  const shapeImageInputRef = useRef(null)
+  const handleShapeImageUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const s = makeShape({ type: 'image', imageSrc: ev.target.result, size: 200, x: 50, y: 50 })
+      setBackgroundShapes(prev => [...prev, s])
+      setSelectedShapeIds([s.id])
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  // C: Keyboard shortcuts — nudge, delete, duplicate, layer order
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!selectedShapeIds.length) return
+      // Skip if focused in an input/textarea
+      const t = e.target
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+
+      const step = e.shiftKey ? 5 : 1
+      const cmd = e.metaKey || e.ctrlKey
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault()
+        selectedShapeIds.forEach(id => removeShape(id))
+      } else if (cmd && (e.key === 'd' || e.key === 'D')) {
+        e.preventDefault()
+        selectedShapeIds.forEach(id => duplicateShape(id))
+      } else if (cmd && e.key === 'ArrowUp') {
+        e.preventDefault()
+        selectedShapeIds.forEach(id => moveLayer(id, 'front'))
+      } else if (cmd && e.key === 'ArrowDown') {
+        e.preventDefault()
+        selectedShapeIds.forEach(id => moveLayer(id, 'back'))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault(); updateMany(selectedShapeIds, (s) => ({ y: Math.max(-50, s.y - step) }))
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault(); updateMany(selectedShapeIds, (s) => ({ y: Math.min(150, s.y + step) }))
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault(); updateMany(selectedShapeIds, (s) => ({ x: Math.max(-50, s.x - step) }))
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault(); updateMany(selectedShapeIds, (s) => ({ x: Math.min(150, s.x + step) }))
+      } else if (e.key === 'Escape') {
+        setSelectedShapeIds([])
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedShapeIds, backgroundShapes])
 
   // App Store tab state — global defaults
   const [asTitle, setAsTitle] = useState('')
@@ -2111,9 +2377,9 @@ export default function App() {
                     </div>
                     <AutoFitScaler cardW={cardW} cardH={cardH} maxVh={55} style={{ ...previewBgHint, borderRadius: 12 }}>
                       {tab === 'simple' ? (
-                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeId={selectedShapeId} onSelectShape={setSelectedShapeId} onMoveShape={moveShape} interactiveShapes />
+                        <SimpleMockupCard src={sel.src} device={device} bg={bg} padding={padding} shadow={shadow} frameColor={frameColor} scale={1} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeIds={selectedShapeIds} onSelectShape={(id, e) => { if (id == null) { setSelectedShapeIds([]); return } if (e?.shiftKey) { setSelectedShapeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]) } else { setSelectedShapeIds([id]) } }} onMoveShape={moveShape} onResizeShape={(id, upd) => updateShape(id, upd)} interactiveShapes />
                       ) : (
-                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeId={selectedShapeId} onSelectShape={setSelectedShapeId} onMoveShape={moveShape} interactiveShapes />
+                        <AppStoreMockupCard src={sel.src} device={previewFmtDevice} bgColor={asBgColor} title={getTitle(sel)} subtitle={getSubtitle(sel)} shadow={shadow} frameColor={frameColor} textColor={asTextColor} titleSize={asTitleSize} subSize={asSubSize} textTop={asTextTop} gap={asGap} exportW={360} exportH={previewExportH} scale={1} fontFamily={asFont.family} subTextColor={asSubColor} topColor={sel.topColor} topIsLight={sel.topIsLight} bottomColor={sel.bottomColor} coverColor={coverColor} cleanStatusBar={cleanStatusBarMode} backgroundShapes={backgroundShapes} selectedShapeIds={selectedShapeIds} onSelectShape={(id, e) => { if (id == null) { setSelectedShapeIds([]); return } if (e?.shiftKey) { setSelectedShapeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]) } else { setSelectedShapeIds([id]) } }} onMoveShape={moveShape} onResizeShape={(id, upd) => updateShape(id, upd)} interactiveShapes />
                       )}
                     </AutoFitScaler>
                   </div>
@@ -2211,19 +2477,22 @@ export default function App() {
 
         </main>
 
-        {/* ── SIDEBAR ────────────────────────────────────────── */}
-        <aside className="w-full lg:w-[276px] bg-white border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[70vh] lg:max-h-none">
+        {/* ── SIDEBAR (Toss-style: gray bg + white cards) ─────── */}
+        <aside className="w-full lg:w-[300px] bg-gray-50 border-t lg:border-t-0 lg:border-l border-gray-100 overflow-y-auto shrink-0 flex flex-col max-h-[70vh] lg:max-h-none">
           {/* Segmented Control */}
           <div className="p-4 pb-2">
-            <div className="flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
+            <div className="flex bg-white rounded-xl p-0.5 gap-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
               {[['simple', t.simpleDevice], ['appstore', t.storeScreenshot], ['graphic', 'Graphic']].map(([id, label]) => (
-                <button key={id} onClick={() => setTab(id)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>{label}</button>
+                <button key={id} onClick={() => setTab(id)} className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all ${tab === id ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900'}`}>{label}</button>
               ))}
             </div>
           </div>
 
-          <div className="p-4 pt-2 flex flex-col gap-5 flex-1">
-            {/* ── SHARED: Device Frame ──────────────────────── */}
+          <div className="p-4 pt-2 flex flex-col gap-3 flex-1">
+            {/* ═══════════════════════════════════════════════════
+                GROUP 1: 기기 설정 (Device & Screen)
+                ═══════════════════════════════════════════════════ */}
+            <AccordionGroup emoji="📱" title={lang === 'ko' ? '기기 설정' : lang === 'zh' ? '设备设置' : 'Device'} defaultOpen>
             <Section title={t.deviceFrame} icon={Smartphone}>
               <div className="flex flex-col gap-3">
                 <DeviceGroup label="iPhone" devices={DEVICES.filter(d => d.type === 'iphone')} current={device} onSelect={setDevice} />
@@ -2331,7 +2600,12 @@ export default function App() {
                 )}
               </Section>
             )}
+            </AccordionGroup>
 
+            {/* ═══════════════════════════════════════════════════
+                GROUP 2: 배경 꾸미기 (Canvas & Decor)
+                ═══════════════════════════════════════════════════ */}
+            <AccordionGroup emoji="🎨" title={lang === 'ko' ? '배경 꾸미기' : lang === 'zh' ? '背景装饰' : 'Canvas & Decor'} defaultOpen>
             {/* ── TAB 1: Simple ─────────────────────────────── */}
             {tab === 'simple' && (
               <>
@@ -2682,19 +2956,44 @@ export default function App() {
 
             {/* ── SHARED: Background Shapes Decorations ────────── */}
             <Section title={lang === 'ko' ? '배경 꾸미기' : lang === 'zh' ? '背景装饰' : 'Background Shapes'} icon={Layers}>
-              {/* Template dropdown */}
+              {/* Template dropdown (built-in + user templates) */}
               <select
                 defaultValue=""
                 onChange={e => { if (e.target.value) { applyBgTemplate(e.target.value); e.target.value = '' } }}
                 className="w-full text-[11px] bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
               >
                 <option value="">{lang === 'ko' ? '📋 템플릿 선택...' : 'Choose template...'}</option>
-                {Object.entries(BG_TEMPLATES).map(([id, tpl]) => (
-                  <option key={id} value={id}>{tpl.label}</option>
-                ))}
+                <optgroup label={lang === 'ko' ? '기본 템플릿' : 'Built-in'}>
+                  {Object.entries(BG_TEMPLATES).map(([id, tpl]) => (
+                    <option key={id} value={id}>{tpl.label}</option>
+                  ))}
+                </optgroup>
+                {userTemplates.length > 0 && (
+                  <optgroup label={lang === 'ko' ? '내 템플릿' : 'My Templates'}>
+                    {userTemplates.map(tpl => (
+                      <option key={tpl.id} value={tpl.id}>{tpl.label}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
 
-              {/* Add shape dropdown */}
+              {/* Save / Manage user templates */}
+              <div className="flex gap-1.5 mb-2">
+                <button onClick={saveUserTemplate} disabled={backgroundShapes.length === 0} className="flex-1 px-2 py-1.5 text-[10px] font-bold rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 disabled:opacity-40" title="현재 배치를 내 템플릿으로 저장">
+                  💾 {lang === 'ko' ? '템플릿 저장' : 'Save template'}
+                </button>
+                {userTemplates.length > 0 && (
+                  <button onClick={() => {
+                    if (confirm(lang === 'ko' ? '삭제할 내 템플릿 이름을 입력:' : 'Template to delete:')) {
+                      const name = prompt(lang === 'ko' ? '삭제할 이름 입력 (취소는 빈칸):' : 'Name:')
+                      const tpl = userTemplates.find(t => t.label.includes(name))
+                      if (tpl) deleteUserTemplate(tpl.id)
+                    }
+                  }} className="px-2 py-1.5 text-[10px] text-gray-400 hover:text-red-500 bg-gray-50 rounded-lg" title="Manage user templates">🗂</button>
+                )}
+              </div>
+
+              {/* Add shape dropdown + Custom image upload */}
               <div className="flex gap-1.5 mb-2">
                 <select
                   defaultValue=""
@@ -2706,31 +3005,73 @@ export default function App() {
                     <option key={t.id} value={t.id}>{t.label}</option>
                   ))}
                 </select>
+                <button onClick={() => shapeImageInputRef.current?.click()} className="px-2 py-2 text-[10px] font-bold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg" title={lang === 'ko' ? '이미지/SVG 업로드' : 'Upload image'}>📷</button>
+                <input ref={shapeImageInputRef} type="file" accept="image/*,.svg" className="hidden" onChange={handleShapeImageUpload} />
                 {backgroundShapes.length > 0 && (
-                  <button onClick={() => { setBackgroundShapes([]); setSelectedShapeId(null) }} className="px-2 py-2 text-[10px] font-semibold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg" title="Clear all">✕</button>
+                  <button onClick={() => { setBackgroundShapes([]); setSelectedShapeIds([]) }} className="px-2 py-2 text-[10px] font-semibold text-red-500 bg-red-50 hover:bg-red-100 rounded-lg" title="Clear all">✕</button>
                 )}
               </div>
 
-              {/* Shape list */}
+              {/* Shape list with lock + duplicate + layer buttons */}
               {backgroundShapes.length > 0 && (
-                <div className="flex flex-col gap-1 mb-2 max-h-[140px] overflow-y-auto">
-                  {backgroundShapes.map((s, i) => (
+                <div className="flex flex-col gap-1 mb-2 max-h-[160px] overflow-y-auto">
+                  {backgroundShapes.slice().reverse().map((s, ri) => {
+                    const i = backgroundShapes.length - 1 - ri
+                    const isSelected = selectedShapeIds.includes(s.id)
+                    return (
                     <div key={s.id}
-                      onClick={() => setSelectedShapeId(s.id)}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all ${selectedShapeId === s.id ? 'bg-violet-100 ring-1 ring-violet-400' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                      <div style={{ width: 14, height: 14, borderRadius: s.type.includes('circle') || s.type === 'ring' || s.type === 'soft-blob' || s.type === 'donut' || s.type === 'gradient-orb' ? '50%' : 3, background: s.color, flexShrink: 0 }} />
+                      onClick={(e) => {
+                        if (e.shiftKey) {
+                          setSelectedShapeIds(prev => prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])
+                        } else {
+                          setSelectedShapeIds([s.id])
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer transition-all ${isSelected ? 'bg-violet-100 ring-1 ring-violet-400' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                      <div style={{ width: 12, height: 12, borderRadius: s.type.includes('circle') || s.type === 'ring' || s.type === 'soft-blob' || s.type === 'donut' || s.type === 'gradient-orb' ? '50%' : 3, background: s.color, flexShrink: 0 }} />
                       <span className="text-[11px] font-semibold text-gray-600 flex-1 truncate">
-                        {SHAPE_TYPES.find(st => st.id === s.type)?.emoji || '●'} #{i + 1}
+                        {SHAPE_TYPES.find(st => st.id === s.type)?.emoji || (s.type === 'image' ? '🖼' : '●')} #{i + 1}
                       </span>
-                      <button onClick={(e) => { e.stopPropagation(); removeShape(s.id) }} className="text-gray-400 hover:text-red-500 text-[12px]">✕</button>
+                      <button onClick={(e) => { e.stopPropagation(); toggleLock(s.id) }} className="text-gray-400 hover:text-amber-500 text-[11px]" title={s.locked ? 'Unlock' : 'Lock'}>{s.locked ? '🔒' : '🔓'}</button>
+                      <button onClick={(e) => { e.stopPropagation(); duplicateShape(s.id) }} className="text-gray-400 hover:text-violet-500 text-[11px]" title="Duplicate (⌘D)">⧉</button>
+                      <button onClick={(e) => { e.stopPropagation(); removeShape(s.id) }} className="text-gray-400 hover:text-red-500 text-[11px]" title="Delete">✕</button>
                     </div>
-                  ))}
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Multi-select indicator */}
+              {selectedShapeIds.length > 1 && (
+                <div className="mb-2 px-2 py-1 bg-violet-50 text-violet-700 text-[10px] font-semibold rounded-lg flex items-center justify-between">
+                  <span>🔗 {selectedShapeIds.length}개 선택됨</span>
+                  <button onClick={() => setSelectedShapeIds([])} className="text-violet-500 hover:text-violet-800">✕</button>
                 </div>
               )}
 
               {/* Selected shape editor */}
               {selectedShape && (
                 <div className="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-2">
+                  {/* A: Layer order + B: Duplicate + I: Lock toggle */}
+                  <div className="flex gap-1">
+                    <button onClick={() => moveLayer(selectedShape.id, 'back')} className="flex-1 px-1 py-1 text-[10px] font-bold rounded bg-gray-50 hover:bg-gray-100 text-gray-600" title="맨 뒤로 (⌘↓)">⤓</button>
+                    <button onClick={() => moveLayer(selectedShape.id, 'down')} className="flex-1 px-1 py-1 text-[10px] font-bold rounded bg-gray-50 hover:bg-gray-100 text-gray-600" title="한 단계 뒤로">↓</button>
+                    <button onClick={() => moveLayer(selectedShape.id, 'up')} className="flex-1 px-1 py-1 text-[10px] font-bold rounded bg-gray-50 hover:bg-gray-100 text-gray-600" title="한 단계 앞으로">↑</button>
+                    <button onClick={() => moveLayer(selectedShape.id, 'front')} className="flex-1 px-1 py-1 text-[10px] font-bold rounded bg-gray-50 hover:bg-gray-100 text-gray-600" title="맨 앞으로 (⌘↑)">⤒</button>
+                    <button onClick={() => duplicateShape(selectedShape.id)} className="flex-1 px-1 py-1 text-[10px] font-bold rounded bg-violet-50 hover:bg-violet-100 text-violet-700" title="복제 (⌘D)">⧉</button>
+                    <button onClick={() => toggleLock(selectedShape.id)} className={`flex-1 px-1 py-1 text-[10px] font-bold rounded ${selectedShape.locked ? 'bg-amber-100 text-amber-700' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`} title="잠금">{selectedShape.locked ? '🔒' : '🔓'}</button>
+                  </div>
+
+                  {/* F: Align helpers (9-grid) */}
+                  <div>
+                    <label className="text-[10px] text-gray-400 font-bold">{lang === 'ko' ? '정렬' : 'Align'}</label>
+                    <div className="grid grid-cols-3 gap-0.5 mt-1 w-fit">
+                      {[['tl','↖'],['tc','↑'],['tr','↗'],['ml','←'],['mc','⊙'],['mr','→'],['bl','↙'],['bc','↓'],['br','↘']].map(([key, arrow]) => (
+                        <button key={key} onClick={() => alignShape(key)} className="w-7 h-7 text-[11px] font-bold rounded bg-gray-50 hover:bg-violet-100 text-gray-600 hover:text-violet-700" title={key}>{arrow}</button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Type switcher */}
                   <select
                     value={selectedShape.type}
@@ -2740,6 +3081,7 @@ export default function App() {
                     {SHAPE_TYPES.map(t => (
                       <option key={t.id} value={t.id}>{t.label}</option>
                     ))}
+                    <option value="image">🖼 Custom Image</option>
                   </select>
                   {/* Color */}
                   <div className="flex items-center gap-2">
@@ -2794,7 +3136,9 @@ export default function App() {
               )}
 
               <p className="text-[10px] text-gray-400 mt-2 leading-snug">
-                {lang === 'ko' ? '💡 확대 미리보기에서 도형을 드래그해서 이동할 수 있습니다' : 'Drag shapes in the enlarged preview to move them'}
+                {lang === 'ko'
+                  ? '💡 드래그 이동 · Shift+클릭 다중선택 · ←→↑↓ 1px(+Shift 5px) · ⌘D 복제 · ⌘↑/↓ 레이어 · Delete 삭제'
+                  : '💡 Drag · Shift-click multi · Arrows nudge · ⌘D duplicate · ⌘↑/↓ layer · Delete'}
               </p>
             </Section>
 
@@ -2802,14 +3146,16 @@ export default function App() {
             <Section title={t.shadow} icon={Layers}>
               <div className="grid grid-cols-2 gap-1.5">
                 {SHADOWS.map(s => (
-                  <button key={s.id} onClick={() => setShadow(s)} className={`px-3 py-2 rounded-xl text-[12px] font-semibold transition-all ${shadow.id === s.id ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>{s.label}</button>
+                  <button key={s.id} onClick={() => setShadow(s)} className={`px-3 py-2 rounded-xl text-[12px] font-semibold transition-all ${shadow.id === s.id ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-100'}`}>{s.label}</button>
                 ))}
               </div>
             </Section>
+            </AccordionGroup>
+            {/* End of GROUP 2 (Canvas & Decor) */}
 
             {images.length === 0 && (
-              <div className="mt-auto p-4 bg-gray-50 rounded-xl">
-                <p className="text-[11px] text-gray-400"><span className="font-semibold text-gray-600">Tip: </span>
+              <div className="p-4 bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <p className="text-[11px] text-gray-500"><span className="font-semibold text-gray-800">💡 Tip: </span>
                   {tab === 'simple' ? t.tipSimple : t.tipStore}
                 </p>
               </div>
@@ -2890,6 +3236,43 @@ function Section({ title, icon: Icon, children }) {
         <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{title}</h3>
       </div>
       {children}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AccordionGroup — Toss-style card with collapse/expand
+   ═══════════════════════════════════════════════════════════════ */
+function AccordionGroup({ title, icon: Icon, emoji, defaultOpen = true, badge, children }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.02)] overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2.5 px-4 py-3.5 hover:bg-gray-50 transition-colors"
+      >
+        {emoji ? (
+          <span className="text-[15px]">{emoji}</span>
+        ) : Icon ? (
+          <Icon className="w-4 h-4 text-gray-600" />
+        ) : null}
+        <span className="flex-1 text-left text-[13px] font-bold text-gray-900">{title}</span>
+        {badge}
+        <svg
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          viewBox="0 0 16 16" fill="none"
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <div
+        className="overflow-hidden transition-[max-height,opacity] duration-250"
+        style={{ maxHeight: open ? '3000px' : '0', opacity: open ? 1 : 0 }}
+      >
+        <div className="px-4 pb-4 pt-1 flex flex-col gap-4">
+          {children}
+        </div>
+      </div>
     </div>
   )
 }
